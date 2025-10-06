@@ -63,7 +63,7 @@ export class InternalServerError extends AppError {
 /**
  * Error handler middleware for Express
  */
-export const errorHandler = (err: Error, req: any, res: any, next: any) => {
+export const errorHandler = (err: Error, _req: any, res: any, _next: any) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       error: {

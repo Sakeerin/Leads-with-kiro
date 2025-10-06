@@ -5,6 +5,7 @@ import leadRoutes from './leads';
 import duplicateRoutes from './duplicates';
 import blacklistRoutes from './blacklist';
 import dataQualityRoutes from './dataQuality';
+import scoringRoutes from './scoring';
 
 const router = Router();
 
@@ -24,6 +25,7 @@ router.use('/leads', leadRoutes);
 router.use('/duplicates', duplicateRoutes);
 router.use('/blacklist', blacklistRoutes);
 router.use('/data-quality', dataQualityRoutes);
+router.use('/scoring', scoringRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

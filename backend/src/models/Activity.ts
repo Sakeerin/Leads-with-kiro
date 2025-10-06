@@ -44,7 +44,7 @@ export class Activity extends BaseModel {
   static async logLeadCreated(leadId: string, performedBy: string, leadData: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'lead_created',
+      type: ActivityTypeEnum.LEAD_CREATED,
       subject: 'Lead created',
       details: { leadData },
       performedBy,
@@ -55,7 +55,7 @@ export class Activity extends BaseModel {
   static async logLeadUpdated(leadId: string, performedBy: string, changes: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'lead_updated',
+      type: ActivityTypeEnum.LEAD_UPDATED,
       subject: 'Lead updated',
       details: { changes },
       performedBy,
@@ -66,7 +66,7 @@ export class Activity extends BaseModel {
   static async logLeadAssigned(leadId: string, performedBy: string, assignedTo: string, reason?: string): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'lead_assigned',
+      type: ActivityTypeEnum.LEAD_ASSIGNED,
       subject: 'Lead assigned',
       details: { assignedTo, reason },
       performedBy,
@@ -77,7 +77,7 @@ export class Activity extends BaseModel {
   static async logStatusChanged(leadId: string, performedBy: string, oldStatus: string, newStatus: string): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'status_changed',
+      type: ActivityTypeEnum.STATUS_CHANGED,
       subject: 'Status changed',
       details: { oldStatus, newStatus },
       performedBy,
@@ -85,12 +85,12 @@ export class Activity extends BaseModel {
     });
   }
 
-  static async logScoreUpdated(leadId: string, performedBy: string, oldScore: number, newScore: number, scoreBand: string): Promise<ActivityTable> {
+  static async logScoreUpdated(leadId: string, performedBy: string, scoreData: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'score_updated',
+      type: ActivityTypeEnum.SCORE_UPDATED,
       subject: 'Score updated',
-      details: { oldScore, newScore, scoreBand },
+      details: { scoreData },
       performedBy,
       performedAt: new Date()
     });
@@ -99,7 +99,7 @@ export class Activity extends BaseModel {
   static async logEmailSent(leadId: string, performedBy: string, emailData: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'email_sent',
+      type: ActivityTypeEnum.EMAIL_SENT,
       subject: 'Email sent',
       details: { emailData },
       performedBy,
@@ -110,7 +110,7 @@ export class Activity extends BaseModel {
   static async logCallMade(leadId: string, performedBy: string, callData: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'call_made',
+      type: ActivityTypeEnum.CALL_MADE,
       subject: 'Call made',
       details: { callData },
       performedBy,
@@ -121,7 +121,7 @@ export class Activity extends BaseModel {
   static async logTaskCreated(leadId: string, performedBy: string, taskId: string, taskData: any): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'task_created',
+      type: ActivityTypeEnum.TASK_CREATED,
       subject: 'Task created',
       details: { taskId, taskData },
       performedBy,
@@ -133,7 +133,7 @@ export class Activity extends BaseModel {
   static async logTaskCompleted(leadId: string, performedBy: string, taskId: string): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'task_completed',
+      type: ActivityTypeEnum.TASK_COMPLETED,
       subject: 'Task completed',
       details: { taskId },
       performedBy,
@@ -145,7 +145,7 @@ export class Activity extends BaseModel {
   static async logNoteAdded(leadId: string, performedBy: string, note: string): Promise<ActivityTable> {
     return this.createActivity({
       leadId,
-      type: 'note_added',
+      type: ActivityTypeEnum.NOTE_ADDED,
       subject: 'Note added',
       details: { note },
       performedBy,

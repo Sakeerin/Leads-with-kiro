@@ -1,5 +1,5 @@
 import { BaseModel } from './BaseModel';
-import { Lead as LeadType, LeadTable, LeadStatus, LeadChannel, ScoreBand } from '../types';
+import { Lead as LeadType, LeadTable, LeadStatus, ScoreBand } from '../types';
 
 export class Lead extends BaseModel {
   protected static override tableName = 'leads';
@@ -190,26 +190,26 @@ export class Lead extends BaseModel {
       id: dbLead.id,
       accountLeadId: dbLead.account_lead_id,
       company: {
-        id: dbLead.company_id,
+        ...(dbLead.company_id && { id: dbLead.company_id }),
         name: dbLead.company_name,
-        industry: dbLead.company_industry,
-        size: dbLead.company_size
+        ...(dbLead.company_industry && { industry: dbLead.company_industry }),
+        ...(dbLead.company_size && { size: dbLead.company_size })
       },
       contact: {
         name: dbLead.contact_name,
-        phone: dbLead.contact_phone,
-        mobile: dbLead.contact_mobile,
+        ...(dbLead.contact_phone && { phone: dbLead.contact_phone }),
+        ...(dbLead.contact_mobile && { mobile: dbLead.contact_mobile }),
         email: dbLead.contact_email
       },
       source: {
         channel: dbLead.source_channel,
-        campaign: dbLead.source_campaign,
-        utmParams: dbLead.source_utm_params ? JSON.parse(dbLead.source_utm_params) : undefined
+        ...(dbLead.source_campaign && { campaign: dbLead.source_campaign }),
+        ...(dbLead.source_utm_params && { utmParams: JSON.parse(dbLead.source_utm_params) })
       },
       assignment: {
-        assignedTo: dbLead.assigned_to,
-        assignedAt: dbLead.assigned_at,
-        assignmentReason: dbLead.assignment_reason
+        ...(dbLead.assigned_to && { assignedTo: dbLead.assigned_to }),
+        ...(dbLead.assigned_at && { assignedAt: dbLead.assigned_at }),
+        ...(dbLead.assignment_reason && { assignmentReason: dbLead.assignment_reason })
       },
       status: dbLead.status,
       score: {
@@ -218,18 +218,18 @@ export class Lead extends BaseModel {
         lastCalculated: dbLead.score_last_calculated
       },
       qualification: {
-        interest: dbLead.qualification_interest,
-        budget: dbLead.qualification_budget,
-        timeline: dbLead.qualification_timeline,
-        businessType: dbLead.qualification_business_type
+        ...(dbLead.qualification_interest && { interest: dbLead.qualification_interest }),
+        ...(dbLead.qualification_budget && { budget: dbLead.qualification_budget }),
+        ...(dbLead.qualification_timeline && { timeline: dbLead.qualification_timeline }),
+        ...(dbLead.qualification_business_type && { businessType: dbLead.qualification_business_type })
       },
       followUp: {
-        nextDate: dbLead.follow_up_next_date,
-        notes: dbLead.follow_up_notes
+        ...(dbLead.follow_up_next_date && { nextDate: dbLead.follow_up_next_date }),
+        ...(dbLead.follow_up_notes && { notes: dbLead.follow_up_notes })
       },
       product: {
-        type: dbLead.product_type,
-        adType: dbLead.product_ad_type
+        ...(dbLead.product_type && { type: dbLead.product_type }),
+        ...(dbLead.product_ad_type && { adType: dbLead.product_ad_type })
       },
       metadata: {
         createdAt: dbLead.created_at,

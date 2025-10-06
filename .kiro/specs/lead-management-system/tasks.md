@@ -32,7 +32,6 @@
   - _Requirements: 1.1, 1.2, 2.1, 2.2, 2.3_
 
 - [x] 5. Implement duplicate detection and data quality features
-
   - Create duplicate detection algorithm using email, phone, and company matching
   - Implement fuzzy matching logic for company names and contact information
   - Build lead merge functionality with field-level provenance tracking
@@ -40,7 +39,8 @@
   - Create blacklist/opt-out management system
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 6. Build lead scoring system
+- [x] 6. Build lead scoring system
+
   - Create configurable scoring model with criteria for profile fit, behavior, and recency
   - Implement score calculation engine that processes industry, company size, B2B/B2C classification
   - Add behavioral scoring for email opens, replies, website visits, and form completions

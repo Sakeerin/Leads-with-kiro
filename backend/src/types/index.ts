@@ -241,8 +241,14 @@ export enum ActivityType {
   SCORE_UPDATED = 'score_updated',
   EMAIL_SENT = 'email_sent',
   EMAIL_RECEIVED = 'email_received',
+  EMAIL_OPENED = 'email_opened',
+  EMAIL_REPLIED = 'email_replied',
   CALL_MADE = 'call_made',
+  CALL_ANSWERED = 'call_answered',
   MEETING_SCHEDULED = 'meeting_scheduled',
+  MEETING_ATTENDED = 'meeting_attended',
+  WEBSITE_VISIT = 'website_visit',
+  FORM_COMPLETED = 'form_completed',
   TASK_CREATED = 'task_created',
   TASK_COMPLETED = 'task_completed',
   NOTE_ADDED = 'note_added',
@@ -340,32 +346,32 @@ export interface LeadTable {
   id: string;
   account_lead_id: string;
   company_name: string;
-  company_id?: string;
-  company_industry?: string;
-  company_size?: CompanySize;
+  company_id?: string | undefined;
+  company_industry?: string | undefined;
+  company_size?: CompanySize | undefined;
   contact_name: string;
-  contact_phone?: string;
-  contact_mobile?: string;
+  contact_phone?: string | undefined;
+  contact_mobile?: string | undefined;
   contact_email: string;
   source_channel: LeadChannel;
-  source_campaign?: string;
-  source_utm_params?: string; // JSON string
-  assigned_to?: string;
-  assigned_at?: Date;
-  assignment_reason?: string;
+  source_campaign?: string | undefined;
+  source_utm_params?: string | null | undefined; // JSON string
+  assigned_to?: string | undefined;
+  assigned_at?: Date | undefined;
+  assignment_reason?: string | undefined;
   status: LeadStatus;
   score_value: number;
   score_band: ScoreBand;
   score_last_calculated: Date;
-  qualification_interest?: InterestLevel;
-  qualification_budget?: BudgetStatus;
-  qualification_timeline?: PurchaseTimeline;
-  qualification_business_type?: BusinessType;
-  follow_up_next_date?: Date;
-  follow_up_notes?: string;
-  product_type?: ProductType;
-  product_ad_type?: AdType;
-  custom_fields?: string; // JSON string
+  qualification_interest?: InterestLevel | undefined;
+  qualification_budget?: BudgetStatus | undefined;
+  qualification_timeline?: PurchaseTimeline | undefined;
+  qualification_business_type?: BusinessType | undefined;
+  follow_up_next_date?: Date | undefined;
+  follow_up_notes?: string | undefined;
+  product_type?: ProductType | undefined;
+  product_ad_type?: AdType | undefined;
+  custom_fields?: string | null | undefined; // JSON string
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
@@ -397,7 +403,7 @@ export interface ActivityTable {
   details: string; // JSON string
   performed_by: string;
   performed_at: Date;
-  related_entities?: string; // JSON string
+  related_entities?: string | null; // JSON string
 }
 
 export interface UserTable {
