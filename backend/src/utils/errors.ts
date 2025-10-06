@@ -60,6 +60,12 @@ export class InternalServerError extends AppError {
   }
 }
 
+export class BusinessLogicError extends AppError {
+  constructor(message: string = 'Business logic error') {
+    super(message, 422);
+  }
+}
+
 /**
  * Error handler middleware for Express
  */

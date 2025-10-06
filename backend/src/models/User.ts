@@ -69,6 +69,24 @@ export class User extends BaseModel {
     await this.update(id, { last_login_at: new Date() });
   }
 
+  static async findByDepartment(department: string): Promise<UserTable[]> {
+    return this.query
+      .where('profile_department', department)
+      .where('is_active', true);
+  }
+
+  static async findManagersByDepartment(department?: string): Promise<UserTable[]> {
+    const query = this.query
+      .where('role', UserRole.MANAGER)
+      .where('is_active', true);
+    
+    if (department) {
+      query.where('profile_department', department);
+    }
+    
+    return query;
+  }
+
   static transformToUserType(dbUser: UserTable): UserType {
     const user: UserType = {
       id: dbUser.id,

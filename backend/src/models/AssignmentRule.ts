@@ -23,10 +23,16 @@ export class AssignmentRule extends BaseModel {
       conditions: JSON.stringify(ruleData.conditions),
       actions: JSON.stringify(ruleData.actions),
       is_active: ruleData.isActive,
-      working_hours: ruleData.workingHours ? JSON.stringify(ruleData.workingHours) : null,
-      territories: ruleData.territories ? JSON.stringify(ruleData.territories) : null,
       created_by: ruleData.createdBy
     };
+
+    if (ruleData.workingHours) {
+      dbData.working_hours = JSON.stringify(ruleData.workingHours);
+    }
+
+    if (ruleData.territories) {
+      dbData.territories = JSON.stringify(ruleData.territories);
+    }
 
     return this.create(dbData);
   }

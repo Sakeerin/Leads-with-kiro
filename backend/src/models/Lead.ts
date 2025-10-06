@@ -185,6 +185,24 @@ export class Lead extends BaseModel {
     return query.orderBy('created_at', 'desc');
   }
 
+  static async countByAssignee(assigneeId: string): Promise<number> {
+    const result = await this.query
+      .where('assigned_to', assigneeId)
+      .where('is_active', true)
+      .count('* as count')
+      .first();
+    
+    return parseInt(result?.['count'] as string) || 0;
+  }
+
+  static async findOverdueLeads(cutoffTime: Date): Promise<LeadTable[]> {
+    return this.query
+      .where('assigned_at', '<', cutoffTime)
+      .whereNotNull('assigned_to')
+      .where('is_active', true)
+      .orderBy('assigned_at', 'asc');
+  }
+
   static transformToLeadType(dbLead: LeadTable): LeadType {
     return {
       id: dbLead.id,
