@@ -2,12 +2,46 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import apiRoutes from './routes';
+import { errorHandler } from './utils/errors';
 
 // Load environment variables
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env['PORT'] || 3001;
+
+// Swagger configuration
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Lead Management System API',
+      version: '1.0.0',
+      description: 'API for Lead Management System with authentication and user management',
+    },
+    servers: [
+      {
+        url: `http://localhost:${PORT}`,
+        description: 'Development server',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
+  },
+  apis: ['./src/routes/*.ts'], // Path to the API docs
+};
+
+const specs = swaggerJsdoc(swaggerOptions);
 
 // Middleware
 app.use(helmet());
@@ -15,8 +49,11 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Swagger documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.status(200).json({
     status: 'OK',
     timestamp: new Date().toISOString(),
@@ -24,24 +61,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes placeholder
-app.get('/api/v1', (req, res) => {
-  res.json({
-    message: 'Lead Management System API v1',
-    version: '1.0.0'
-  });
-});
+// API routes
+app.use('/api/v1', apiRoutes);
 
 // Error handling middleware
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({
-    error: {
-      message: 'Internal Server Error',
-      timestamp: new Date().toISOString()
-    }
-  });
-});
+app.use(errorHandler);
 
 // 404 handler
 app.use('*', (req, res) => {

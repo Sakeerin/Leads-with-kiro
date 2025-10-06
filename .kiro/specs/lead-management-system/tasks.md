@@ -9,14 +9,13 @@
   - _Requirements: 10.3, 10.4_
 
 - [x] 2. Implement core data models and database schema
-
   - Create PostgreSQL database schema with tables for leads, tasks, activities, users, and configuration
   - Implement database migration system using Knex.js or similar
   - Create TypeScript interfaces for all core entities (Lead, Task, Activity, User, AssignmentRule)
   - Set up database connection pooling and configuration
   - _Requirements: 1.1, 2.1, 6.1, 9.1_
 
-- [ ] 3. Build authentication and authorization system
+- [x] 3. Build authentication and authorization system
   - Implement JWT-based authentication service with refresh token support
   - Create user registration and login endpoints
   - Implement role-based access control (RBAC) middleware
@@ -24,7 +23,8 @@
   - Add password hashing and security validation
   - _Requirements: 10.1, 10.2_
 
-- [ ] 4. Develop Lead Service core functionality
+- [x] 4. Develop Lead Service core functionality
+
   - Create Lead model with validation rules for required fields
   - Implement CRUD operations for leads (create, read, update, delete, soft delete)
   - Add auto-generation logic for Account Lead ID in AL-YY-MM-XXX format
