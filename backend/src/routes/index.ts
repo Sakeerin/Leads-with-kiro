@@ -2,6 +2,9 @@ import { Router } from 'express';
 import authRoutes from './auth';
 import userRoutes from './users';
 import leadRoutes from './leads';
+import duplicateRoutes from './duplicates';
+import blacklistRoutes from './blacklist';
+import dataQualityRoutes from './dataQuality';
 
 const router = Router();
 
@@ -18,6 +21,9 @@ router.get('/', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/leads', leadRoutes);
+router.use('/duplicates', duplicateRoutes);
+router.use('/blacklist', blacklistRoutes);
+router.use('/data-quality', dataQualityRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

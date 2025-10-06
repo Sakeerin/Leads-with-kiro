@@ -115,6 +115,20 @@ export interface AssignmentRule {
   createdBy: string;
 }
 
+export interface Blacklist {
+  id: string;
+  type: BlacklistType;
+  value: string;
+  reason: BlacklistReason;
+  notes?: string;
+  addedBy: string;
+  removedBy?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  removedAt?: Date;
+}
+
 // Enums and supporting types
 export enum CompanySize {
   STARTUP = 'startup',
@@ -242,6 +256,25 @@ export enum UserRole {
   MARKETING = 'marketing',
   READ_ONLY = 'read_only',
   GUEST = 'guest'
+}
+
+export enum BlacklistType {
+  EMAIL = 'email',
+  PHONE = 'phone',
+  DOMAIN = 'domain',
+  COMPANY = 'company'
+}
+
+export enum BlacklistReason {
+  SPAM = 'spam',
+  UNSUBSCRIBED = 'unsubscribed',
+  BOUNCED = 'bounced',
+  COMPLAINED = 'complained',
+  INVALID = 'invalid',
+  COMPETITOR = 'competitor',
+  DO_NOT_CONTACT = 'do_not_contact',
+  GDPR_REQUEST = 'gdpr_request',
+  MANUAL = 'manual'
 }
 
 // Supporting interfaces
@@ -396,4 +429,18 @@ export interface AssignmentRuleTable {
   created_at: Date;
   updated_at: Date;
   created_by: string;
+}
+
+export interface BlacklistTable {
+  id: string;
+  type: BlacklistType;
+  value: string;
+  reason: BlacklistReason;
+  notes?: string;
+  added_by: string;
+  removed_by?: string;
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  removed_at?: Date;
 }

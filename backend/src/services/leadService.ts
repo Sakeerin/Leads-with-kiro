@@ -1,7 +1,11 @@
 import { Lead } from '../models/Lead';
 import { Activity } from '../models/Activity';
-import { Lead as LeadType, LeadStatus, LeadChannel, ScoreBand, CompanySize, InterestLevel, BudgetStatus, PurchaseTimeline, BusinessType, ProductType, AdType } from '../types';
+import { Blacklist } from '../models/Blacklist';
+import { Lead as LeadType, LeadStatus, LeadChannel, ScoreBand, CompanySize, InterestLevel, BudgetStatus, PurchaseTimeline, BusinessType, ProductType, AdType, BlacklistTable } from '../types';
 import { ValidationError, NotFoundError } from '../utils/errors';
+import { DuplicateDetectionEngine, DuplicateCandidate } from '../utils/duplicateDetection';
+import { DataValidator } from '../utils/dataValidation';
+import { LeadMergeService, MergePreview, MergeRequest, MergeResult } from './leadMergeService';
 
 export interface CreateLeadRequest {
   company: {
@@ -114,45 +118,107 @@ export interface PaginatedLeads {
 
 export interface DuplicateMatch {
   lead: LeadType;
-  matchType: 'email' | 'phone' | 'company';
+  matchType: 'email' | 'phone' | 'company' | 'contact';
   confidence: number;
+  matches: Array<{
+    field: string;
+    confidence: number;
+    matchType: 'exact' | 'fuzzy' | 'normalized';
+  }>;
+}
+
+export interface DataQualityCheck {
+  isValid: boolean;
+  errors: string[];
+  warnings: string[];
+  isBlacklisted: boolean;
+  blacklistMatches: BlacklistTable[];
+  duplicates: DuplicateMatch[];
+  suggestions: string[];
 }
 
 export class LeadService {
+  private static duplicateEngine = new DuplicateDetectionEngine();
+
+  /**
+   * Comprehensive data quality check for lead data
+   */
+  static async performDataQualityCheck(data: CreateLeadRequest): Promise<DataQualityCheck> {
+    const result: DataQualityCheck = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+      isBlacklisted: false,
+      blacklistMatches: [],
+      duplicates: [],
+      suggestions: []
+    };
+
+    // Validate data format and required fields
+    const validationResult = DataValidator.validateLeadData(data);
+    result.isValid = validationResult.isValid;
+    result.errors = validationResult.errors;
+    result.warnings = validationResult.warnings;
+
+    // Check against blacklist
+    const blacklistCheck = await Blacklist.checkLeadAgainstBlacklist({
+      email: data.contact.email,
+      phone: data.contact.phone,
+      mobile: data.contact.mobile,
+      companyName: data.company.name
+    });
+
+    result.isBlacklisted = blacklistCheck.isBlacklisted;
+    result.blacklistMatches = blacklistCheck.matches;
+
+    if (result.isBlacklisted) {
+      result.isValid = false;
+      result.errors.push('Lead data matches blacklisted entries');
+    }
+
+    // Detect duplicates
+    const duplicates = await this.detectDuplicatesAdvanced({
+      email: data.contact.email,
+      phone: data.contact.phone,
+      mobile: data.contact.mobile,
+      companyName: data.company.name,
+      contactName: data.contact.name
+    });
+
+    result.duplicates = duplicates;
+
+    if (duplicates.length > 0) {
+      result.warnings.push(`Found ${duplicates.length} potential duplicate(s)`);
+      result.suggestions.push('Review duplicates before creating lead');
+    }
+
+    // Additional data quality suggestions
+    if (data.contact.phone && data.contact.mobile && data.contact.phone === data.contact.mobile) {
+      result.warnings.push('Phone and mobile numbers are identical');
+      result.suggestions.push('Verify if both phone numbers are correct');
+    }
+
+    if (data.company.name.length < 3) {
+      result.warnings.push('Company name is very short');
+      result.suggestions.push('Consider providing a more complete company name');
+    }
+
+    if (!data.contact.phone && !data.contact.mobile) {
+      result.warnings.push('No phone number provided');
+      result.suggestions.push('Adding a phone number improves lead quality');
+    }
+
+    return result;
+  }
+
   /**
    * Validate required fields for lead creation
    */
   private static validateCreateLeadData(data: CreateLeadRequest): void {
-    const errors: string[] = [];
-
-    // Company validation
-    if (!data.company?.name?.trim()) {
-      errors.push('Company name is required');
-    }
-
-    // Contact validation
-    if (!data.contact?.name?.trim()) {
-      errors.push('Contact name is required');
-    }
-
-    if (!data.contact?.email?.trim()) {
-      errors.push('Contact email is required');
-    } else if (!this.isValidEmail(data.contact.email)) {
-      errors.push('Contact email format is invalid');
-    }
-
-    // Source validation
-    if (!data.source?.channel) {
-      errors.push('Source channel is required');
-    }
-
-    // Created by validation
-    if (!data.createdBy?.trim()) {
-      errors.push('Created by user ID is required');
-    }
-
-    if (errors.length > 0) {
-      throw new ValidationError('Lead validation failed', errors);
+    const validationResult = DataValidator.validateLeadData(data);
+    
+    if (!validationResult.isValid) {
+      throw new ValidationError('Lead validation failed', validationResult.errors);
     }
   }
 
@@ -160,48 +226,40 @@ export class LeadService {
    * Validate email format
    */
   private static isValidEmail(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return DataValidator.validateEmail(email).isValid;
   }
 
   /**
-   * Validate phone number format (basic validation)
+   * Validate phone number format
    */
   private static isValidPhone(phone: string): boolean {
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+    return DataValidator.validatePhone(phone).isValid;
   }
 
   /**
-   * Create a new lead with validation and audit logging
+   * Create a new lead with comprehensive validation and quality checks
    */
-  static async createLead(data: CreateLeadRequest): Promise<LeadType> {
-    // Validate input data
-    this.validateCreateLeadData(data);
+  static async createLead(data: CreateLeadRequest, skipQualityCheck: boolean = false): Promise<LeadType> {
+    // Perform comprehensive data quality check
+    if (!skipQualityCheck) {
+      const qualityCheck = await this.performDataQualityCheck(data);
+      
+      if (!qualityCheck.isValid) {
+        throw new ValidationError('Lead data quality check failed', qualityCheck.errors);
+      }
 
-    // Validate phone numbers if provided
-    if (data.contact.phone && !this.isValidPhone(data.contact.phone)) {
-      throw new ValidationError('Invalid phone number format');
-    }
-    if (data.contact.mobile && !this.isValidPhone(data.contact.mobile)) {
-      throw new ValidationError('Invalid mobile number format');
-    }
+      // Log warnings if any
+      if (qualityCheck.warnings.length > 0) {
+        console.warn('Lead creation warnings:', qualityCheck.warnings);
+      }
 
-    // Check for duplicates
-    const duplicateData: { email?: string; phone?: string; companyName?: string } = {
-      email: data.contact.email
-    };
-    const phoneNumber = data.contact.phone || data.contact.mobile;
-    if (phoneNumber) {
-      duplicateData.phone = phoneNumber;
-    }
-    if (data.company.name) {
-      duplicateData.companyName = data.company.name;
-    }
-    const duplicates = await this.detectDuplicates(duplicateData);
-
-    if (duplicates.length > 0) {
-      console.warn(`Potential duplicates found for lead: ${data.contact.email}`, duplicates);
+      // Log duplicates found
+      if (qualityCheck.duplicates.length > 0) {
+        console.warn(`Potential duplicates found for lead: ${data.contact.email}`, qualityCheck.duplicates);
+      }
+    } else {
+      // Basic validation only
+      this.validateCreateLeadData(data);
     }
 
     // Prepare lead data with defaults
@@ -514,85 +572,72 @@ export class LeadService {
   }
 
   /**
-   * Detect potential duplicate leads
+   * Advanced duplicate detection using fuzzy matching
+   */
+  static async detectDuplicatesAdvanced(data: {
+    email: string;
+    phone?: string;
+    mobile?: string;
+    companyName: string;
+    contactName: string;
+  }): Promise<DuplicateMatch[]> {
+    // Get all active leads for comparison
+    const allLeads = await Lead.query.where('is_active', true);
+    const duplicates: DuplicateMatch[] = [];
+
+    for (const dbLead of allLeads) {
+      const candidate = this.duplicateEngine.analyzeDuplicate(
+        {
+          id: 'new',
+          email: data.email,
+          phone: data.phone,
+          mobile: data.mobile,
+          companyName: data.companyName,
+          contactName: data.contactName
+        },
+        {
+          id: dbLead.id,
+          email: dbLead.contact_email,
+          phone: dbLead.contact_phone,
+          mobile: dbLead.contact_mobile,
+          companyName: dbLead.company_name,
+          contactName: dbLead.contact_name
+        }
+      );
+
+      if (candidate) {
+        duplicates.push({
+          lead: Lead.transformToLeadType(dbLead),
+          matchType: candidate.primaryMatchType,
+          confidence: candidate.overallConfidence,
+          matches: candidate.matches.map(match => ({
+            field: match.field,
+            confidence: match.confidence,
+            matchType: match.matchType
+          }))
+        });
+      }
+    }
+
+    // Sort by confidence descending
+    return duplicates.sort((a, b) => b.confidence - a.confidence);
+  }
+
+  /**
+   * Legacy duplicate detection method (for backward compatibility)
    */
   static async detectDuplicates(data: {
     email?: string;
     phone?: string;
     companyName?: string;
   }): Promise<DuplicateMatch[]> {
-    const matches: DuplicateMatch[] = [];
-
-    if (data.email) {
-      const emailMatches = await Lead.findByEmail(data.email);
-      emailMatches.forEach(dbLead => {
-        if (dbLead.is_active) {
-          matches.push({
-            lead: Lead.transformToLeadType(dbLead),
-            matchType: 'email',
-            confidence: 1.0 // Exact email match
-          });
-        }
-      });
-    }
-
-    if (data.phone) {
-      const phoneMatches = await Lead.findDuplicates('', data.phone);
-      phoneMatches.forEach(dbLead => {
-        if (dbLead.is_active && !matches.some(m => m.lead.id === dbLead.id)) {
-          matches.push({
-            lead: Lead.transformToLeadType(dbLead),
-            matchType: 'phone',
-            confidence: 0.9 // High confidence for phone match
-          });
-        }
-      });
-    }
-
-    if (data.companyName) {
-      const companyMatches = await Lead.findDuplicates('', '', data.companyName);
-      companyMatches.forEach(dbLead => {
-        if (dbLead.is_active && !matches.some(m => m.lead.id === dbLead.id)) {
-          // Calculate fuzzy match confidence based on company name similarity
-          const confidence = this.calculateCompanyNameSimilarity(data.companyName!, dbLead.company_name);
-          if (confidence > 0.7) { // Only include if confidence > 70%
-            matches.push({
-              lead: Lead.transformToLeadType(dbLead),
-              matchType: 'company',
-              confidence
-            });
-          }
-        }
-      });
-    }
-
-    // Sort by confidence descending
-    return matches.sort((a, b) => b.confidence - a.confidence);
-  }
-
-  /**
-   * Calculate similarity between company names (simple implementation)
-   */
-  private static calculateCompanyNameSimilarity(name1: string, name2: string): number {
-    const normalize = (str: string) => str.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const n1 = normalize(name1);
-    const n2 = normalize(name2);
-
-    if (n1 === n2) return 1.0;
-    if (n1.includes(n2) || n2.includes(n1)) return 0.8;
-
-    // Simple Levenshtein distance approximation
-    const maxLen = Math.max(n1.length, n2.length);
-    const minLen = Math.min(n1.length, n2.length);
-    
-    if (maxLen === 0) return 1.0;
-    
-    let matches = 0;
-    for (let i = 0; i < minLen; i++) {
-      if (n1[i] === n2[i]) matches++;
-    }
-    
-    return matches / maxLen;
+    return this.detectDuplicatesAdvanced({
+      email: data.email || '',
+      phone: data.phone,
+      mobile: undefined,
+      companyName: data.companyName || '',
+      contactName: ''
+    });
   }
 
   /**
@@ -656,6 +701,101 @@ export class LeadService {
       bySource: sourceStats,
       byScoreBand: scoreBandStats,
       recentCount: parseInt(recent?.['count'] as string) || 0
+    };
+  }
+
+  /**
+   * Generate merge preview for two leads
+   */
+  static async generateMergePreview(sourceId: string, targetId: string): Promise<MergePreview> {
+    return LeadMergeService.generateMergePreview(sourceId, targetId);
+  }
+
+  /**
+   * Merge two leads
+   */
+  static async mergeLeads(request: MergeRequest): Promise<MergeResult> {
+    return LeadMergeService.mergeLead(request);
+  }
+
+  /**
+   * Undo a lead merge
+   */
+  static async undoMerge(
+    mergedLeadId: string,
+    originalSourceData: any,
+    undoneBy: string
+  ): Promise<LeadType> {
+    return LeadMergeService.undoMerge(mergedLeadId, originalSourceData, undoneBy);
+  }
+
+  /**
+   * Sanitize lead data before processing
+   */
+  static sanitizeLeadData(data: CreateLeadRequest): CreateLeadRequest {
+    return {
+      ...data,
+      company: {
+        ...data.company,
+        name: DataValidator.sanitizeString(data.company.name)
+      },
+      contact: {
+        ...data.contact,
+        name: DataValidator.sanitizeString(data.contact.name),
+        email: DataValidator.sanitizeEmail(data.contact.email),
+        phone: data.contact.phone ? DataValidator.sanitizePhone(data.contact.phone) : undefined,
+        mobile: data.contact.mobile ? DataValidator.sanitizePhone(data.contact.mobile) : undefined
+      }
+    };
+  }
+
+  /**
+   * Bulk data quality check for multiple leads
+   */
+  static async bulkDataQualityCheck(leads: CreateLeadRequest[]): Promise<{
+    results: Array<{ index: number; result: DataQualityCheck }>;
+    summary: {
+      total: number;
+      valid: number;
+      invalid: number;
+      blacklisted: number;
+      duplicates: number;
+    };
+  }> {
+    const results: Array<{ index: number; result: DataQualityCheck }> = [];
+    let valid = 0;
+    let invalid = 0;
+    let blacklisted = 0;
+    let duplicates = 0;
+
+    for (let i = 0; i < leads.length; i++) {
+      const result = await this.performDataQualityCheck(leads[i]);
+      results.push({ index: i, result });
+
+      if (result.isValid) {
+        valid++;
+      } else {
+        invalid++;
+      }
+
+      if (result.isBlacklisted) {
+        blacklisted++;
+      }
+
+      if (result.duplicates.length > 0) {
+        duplicates++;
+      }
+    }
+
+    return {
+      results,
+      summary: {
+        total: leads.length,
+        valid,
+        invalid,
+        blacklisted,
+        duplicates
+      }
     };
   }
 }

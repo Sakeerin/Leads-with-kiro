@@ -24,7 +24,6 @@
   - _Requirements: 10.1, 10.2_
 
 - [x] 4. Develop Lead Service core functionality
-
   - Create Lead model with validation rules for required fields
   - Implement CRUD operations for leads (create, read, update, delete, soft delete)
   - Add auto-generation logic for Account Lead ID in AL-YY-MM-XXX format
@@ -32,7 +31,8 @@
   - Create audit logging for all lead operations
   - _Requirements: 1.1, 1.2, 2.1, 2.2, 2.3_
 
-- [ ] 5. Implement duplicate detection and data quality features
+- [x] 5. Implement duplicate detection and data quality features
+
   - Create duplicate detection algorithm using email, phone, and company matching
   - Implement fuzzy matching logic for company names and contact information
   - Build lead merge functionality with field-level provenance tracking
