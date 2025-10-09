@@ -4,6 +4,7 @@ import { Task as TaskType, TaskTable, TaskStatus, Priority, Reminder, ActivityTy
 import { ValidationError, NotFoundError } from '../utils/errors';
 import { NotificationService } from './notificationService';
 import { ReminderScheduler } from './reminderScheduler';
+import { workflowTrigger } from './workflowTrigger';
 
 export class TaskService {
   /**
@@ -140,6 +141,18 @@ export class TaskService {
 
     // Clear any pending reminders for completed task
     ReminderScheduler.clearTaskReminders(taskId);
+
+    // Trigger workflow automation for task completion
+    try {
+      await workflowTrigger.onTaskCompleted(
+        existingTask.lead_id,
+        completedBy,
+        taskId,
+        task
+      );
+    } catch (error) {
+      console.warn('Failed to trigger task completion workflows:', error);
+    }
 
     return task;
   }

@@ -64,7 +64,6 @@
   - _Requirements: 6.1, 6.2, 6.5_
 
 - [x] 9. Implement communication and email integration
-
   - Create email template system with variable substitution
   - Implement email sending functionality using SMTP or email service API
   - Build inbound email processing to associate replies with correct leads
@@ -72,7 +71,8 @@
   - Create calendar integration for follow-up scheduling
   - _Requirements: 7.1, 7.4, 7.2_
 
-- [ ] 10. Develop workflow automation system
+- [x] 10. Develop workflow automation system
+
   - Create workflow engine that can execute predefined automation sequences
   - Implement trigger system for lead created, assigned, score changed, and status updated events
   - Build automated email sequences and follow-up task creation

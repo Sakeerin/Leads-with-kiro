@@ -6,6 +6,7 @@ import { ValidationError, NotFoundError } from '../utils/errors';
 import { DuplicateDetectionEngine, DuplicateCandidate } from '../utils/duplicateDetection';
 import { DataValidator } from '../utils/dataValidation';
 import { LeadMergeService, MergePreview, MergeRequest, MergeResult } from './leadMergeService';
+import { workflowTrigger } from './workflowTrigger';
 
 export interface CreateLeadRequest {
   company: {
@@ -301,6 +302,13 @@ export class LeadService {
       );
     }
 
+    // Trigger workflow automation for lead creation
+    try {
+      await workflowTrigger.onLeadCreated(lead.id, data.createdBy, leadData);
+    } catch (error) {
+      console.warn('Failed to trigger lead creation workflows:', error);
+    }
+
     return lead;
   }
 
@@ -437,6 +445,29 @@ export class LeadService {
 
     if (changes['status']) {
       await Activity.logStatusChanged(id, updatedBy, changes['status'].old, changes['status'].new);
+    }
+
+    // Trigger workflow automation for changes
+    try {
+      if (changes['assignment'] && data.assignment?.assignedTo) {
+        await workflowTrigger.onLeadAssigned(
+          id,
+          updatedBy,
+          data.assignment.assignedTo,
+          changes['assignment'].old.assignedTo
+        );
+      }
+
+      if (changes['status']) {
+        await workflowTrigger.onStatusUpdated(
+          id,
+          updatedBy,
+          changes['status'].new,
+          changes['status'].old
+        );
+      }
+    } catch (error) {
+      console.warn('Failed to trigger workflow automation:', error);
     }
 
     return updatedLead;

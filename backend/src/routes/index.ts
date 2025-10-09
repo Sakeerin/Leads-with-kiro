@@ -11,6 +11,7 @@ import taskRoutes from './tasks';
 import activityRoutes from './activities';
 import notificationRoutes from './notifications';
 import communicationRoutes from './communication';
+import workflowRoutes from './workflow';
 
 const router = Router();
 
@@ -36,6 +37,7 @@ router.use('/tasks', taskRoutes);
 router.use('/activities', activityRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/communication', communicationRoutes);
+router.use('/workflows', workflowRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

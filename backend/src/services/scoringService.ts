@@ -2,6 +2,7 @@ import { Lead } from '../models/Lead';
 import { Activity } from '../models/Activity';
 import { Lead as LeadType, ScoreBand, CompanySize, BusinessType, LeadChannel, InterestLevel, BudgetStatus, PurchaseTimeline } from '../types';
 import { ValidationError, NotFoundError } from '../utils/errors';
+import { workflowTrigger } from './workflowTrigger';
 
 export interface ScoringCriteria {
   profileFit: {
@@ -293,6 +294,19 @@ export class ScoringService {
 
     // Execute score band actions
     await this.executeScoreBandActions(leadId, scoreBand, scoreBands);
+
+    // Trigger workflow automation for score changes
+    try {
+      await workflowTrigger.onScoreChanged(
+        leadId,
+        'system',
+        totalScore,
+        lead.score.value,
+        scoreBand
+      );
+    } catch (error) {
+      console.warn('Failed to trigger score change workflows:', error);
+    }
 
     return leadScore;
   }
