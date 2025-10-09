@@ -7,6 +7,10 @@ import blacklistRoutes from './blacklist';
 import dataQualityRoutes from './dataQuality';
 import scoringRoutes from './scoring';
 import routingRoutes from './routing';
+import taskRoutes from './tasks';
+import activityRoutes from './activities';
+import notificationRoutes from './notifications';
+import communicationRoutes from './communication';
 
 const router = Router();
 
@@ -28,6 +32,10 @@ router.use('/blacklist', blacklistRoutes);
 router.use('/data-quality', dataQualityRoutes);
 router.use('/scoring', scoringRoutes);
 router.use('/routing', routingRoutes);
+router.use('/tasks', taskRoutes);
+router.use('/activities', activityRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/communication', communicationRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

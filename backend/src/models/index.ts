@@ -4,3 +4,7 @@ export { Lead } from './Lead';
 export { Task } from './Task';
 export { Activity } from './Activity';
 export { AssignmentRule } from './AssignmentRule';
+export { EmailTemplateModel } from './EmailTemplate';
+export { EmailLogModel } from './EmailLog';
+export { InboundEmailModel } from './InboundEmail';
+export { CommunicationHistoryModel } from './CommunicationHistory';

@@ -250,7 +250,9 @@ export enum ActivityType {
   WEBSITE_VISIT = 'website_visit',
   FORM_COMPLETED = 'form_completed',
   TASK_CREATED = 'task_created',
+  TASK_UPDATED = 'task_updated',
   TASK_COMPLETED = 'task_completed',
+  TASK_CANCELLED = 'task_cancelled',
   NOTE_ADDED = 'note_added',
   FILE_UPLOADED = 'file_uploaded'
 }
@@ -449,4 +451,227 @@ export interface BlacklistTable {
   created_at: Date;
   updated_at: Date;
   removed_at?: Date;
+}
+
+// Communication and Email Integration Types
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: EmailTemplateType;
+  variables: string[]; // Array of variable names used in template
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+}
+
+export interface EmailLog {
+  id: string;
+  leadId: string;
+  templateId?: string;
+  to: string;
+  cc?: string;
+  bcc?: string;
+  subject: string;
+  body: string;
+  status: EmailStatus;
+  sentAt?: Date;
+  deliveredAt?: Date;
+  openedAt?: Date;
+  clickedAt?: Date;
+  repliedAt?: Date;
+  bouncedAt?: Date;
+  errorMessage?: string;
+  messageId?: string; // External email service message ID
+  createdAt: Date;
+  sentBy: string;
+}
+
+export interface InboundEmail {
+  id: string;
+  leadId?: string;
+  from: string;
+  to: string;
+  subject: string;
+  body: string;
+  htmlBody?: string;
+  messageId: string;
+  inReplyTo?: string;
+  references?: string;
+  receivedAt: Date;
+  processed: boolean;
+  processedAt?: Date;
+  attachments?: EmailAttachment[];
+}
+
+export interface EmailAttachment {
+  id: string;
+  filename: string;
+  contentType: string;
+  size: number;
+  url?: string;
+  content?: Buffer;
+}
+
+export interface CalendarEvent {
+  id: string;
+  leadId: string;
+  taskId?: string;
+  title: string;
+  description?: string;
+  startTime: Date;
+  endTime: Date;
+  location?: string;
+  attendees: string[];
+  organizer: string;
+  status: CalendarEventStatus;
+  externalEventId?: string; // ID from external calendar service
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CommunicationHistory {
+  id: string;
+  leadId: string;
+  type: CommunicationType;
+  direction: CommunicationDirection;
+  subject?: string;
+  content: string;
+  metadata: Record<string, any>;
+  performedBy: string;
+  performedAt: Date;
+  relatedEmailId?: string;
+  relatedTaskId?: string;
+}
+
+// Enums for communication types
+export enum EmailTemplateType {
+  WELCOME = 'welcome',
+  FOLLOW_UP = 'follow_up',
+  PROPOSAL = 'proposal',
+  MEETING_INVITATION = 'meeting_invitation',
+  THANK_YOU = 'thank_you',
+  NURTURE = 'nurture',
+  REMINDER = 'reminder',
+  CUSTOM = 'custom'
+}
+
+export enum EmailStatus {
+  DRAFT = 'draft',
+  QUEUED = 'queued',
+  SENDING = 'sending',
+  SENT = 'sent',
+  DELIVERED = 'delivered',
+  OPENED = 'opened',
+  CLICKED = 'clicked',
+  REPLIED = 'replied',
+  BOUNCED = 'bounced',
+  FAILED = 'failed'
+}
+
+export enum CalendarEventStatus {
+  TENTATIVE = 'tentative',
+  CONFIRMED = 'confirmed',
+  CANCELLED = 'cancelled'
+}
+
+export enum CommunicationType {
+  EMAIL = 'email',
+  PHONE = 'phone',
+  SMS = 'sms',
+  WHATSAPP = 'whatsapp',
+  LINE = 'line',
+  MEETING = 'meeting',
+  NOTE = 'note'
+}
+
+export enum CommunicationDirection {
+  INBOUND = 'inbound',
+  OUTBOUND = 'outbound'
+}
+
+// Database table interfaces for communication
+export interface EmailTemplateTable {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: EmailTemplateType;
+  variables: string; // JSON string array
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+export interface EmailLogTable {
+  id: string;
+  lead_id: string;
+  template_id?: string;
+  to_email: string;
+  cc_email?: string;
+  bcc_email?: string;
+  subject: string;
+  body: string;
+  status: EmailStatus;
+  sent_at?: Date;
+  delivered_at?: Date;
+  opened_at?: Date;
+  clicked_at?: Date;
+  replied_at?: Date;
+  bounced_at?: Date;
+  error_message?: string;
+  message_id?: string;
+  created_at: Date;
+  sent_by: string;
+}
+
+export interface InboundEmailTable {
+  id: string;
+  lead_id?: string;
+  from_email: string;
+  to_email: string;
+  subject: string;
+  body: string;
+  html_body?: string;
+  message_id: string;
+  in_reply_to?: string;
+  references?: string;
+  received_at: Date;
+  processed: boolean;
+  processed_at?: Date;
+  attachments?: string; // JSON string
+}
+
+export interface CalendarEventTable {
+  id: string;
+  lead_id: string;
+  task_id?: string;
+  title: string;
+  description?: string;
+  start_time: Date;
+  end_time: Date;
+  location?: string;
+  attendees: string; // JSON string array
+  organizer: string;
+  status: CalendarEventStatus;
+  external_event_id?: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface CommunicationHistoryTable {
+  id: string;
+  lead_id: string;
+  type: CommunicationType;
+  direction: CommunicationDirection;
+  subject?: string;
+  content: string;
+  metadata: string; // JSON string
+  performed_by: string;
+  performed_at: Date;
+  related_email_id?: string;
+  related_task_id?: string;
 }

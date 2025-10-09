@@ -40,7 +40,6 @@
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
 - [x] 6. Build lead scoring system
-
   - Create configurable scoring model with criteria for profile fit, behavior, and recency
   - Implement score calculation engine that processes industry, company size, B2B/B2C classification
   - Add behavioral scoring for email opens, replies, website visits, and form completions
@@ -48,7 +47,7 @@
   - Implement batch score recalculation functionality
   - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 7. Develop assignment and routing engine
+- [x] 7. Develop assignment and routing engine
   - Create assignment rules engine with support for round-robin, territory, expertise, and priority-based routing
   - Implement workload balancing across sales representatives
   - Add time-window routing based on working hours and availability
@@ -56,7 +55,7 @@
   - Implement SLA timer system with escalation to managers
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 8. Build task management and activity tracking system
+- [x] 8. Build task management and activity tracking system
   - Create task model with due dates, assignees, priorities, and reminders
   - Implement activity logging for all lead interactions (create, update, email, call, status change)
   - Build chronological timeline view for lead activities
@@ -64,7 +63,8 @@
   - Create task completion tracking and reminder system
   - _Requirements: 6.1, 6.2, 6.5_
 
-- [ ] 9. Implement communication and email integration
+- [x] 9. Implement communication and email integration
+
   - Create email template system with variable substitution
   - Implement email sending functionality using SMTP or email service API
   - Build inbound email processing to associate replies with correct leads

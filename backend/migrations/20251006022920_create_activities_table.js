@@ -9,7 +9,9 @@ exports.up = function(knex) {
     table.enum('type', [
       'lead_created', 'lead_updated', 'lead_assigned', 'lead_reassigned',
       'status_changed', 'score_updated', 'email_sent', 'email_received',
-      'call_made', 'meeting_scheduled', 'task_created', 'task_completed',
+      'email_opened', 'email_replied', 'call_made', 'call_answered',
+      'meeting_scheduled', 'meeting_attended', 'website_visit', 'form_completed',
+      'task_created', 'task_updated', 'task_completed', 'task_cancelled',
       'note_added', 'file_uploaded'
     ]).notNullable();
     table.string('subject').notNullable();
