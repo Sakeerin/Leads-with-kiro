@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Card,
-  CardContent,
   Typography,
   Button,
   Dialog,
@@ -20,30 +19,20 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  Avatar,
-  Tooltip,
   Alert,
   CircularProgress,
   Grid,
   Paper,
-  Divider
+  Tooltip,
 } from '@mui/material';
 import {
   Add as AddIcon,
   Edit as EditIcon,
   Check as CheckIcon,
   Delete as DeleteIcon,
-  Assignment as AssignmentIcon,
-  Schedule as ScheduleIcon,
-  Priority as PriorityIcon,
-  Person as PersonIcon,
   Refresh as RefreshIcon,
-  FilterList as FilterIcon
 } from '@mui/icons-material';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { formatDistanceToNow, format, isAfter, isBefore } from 'date-fns';
+import { formatDistanceToNow, format, isBefore } from 'date-fns';
 
 // Types
 interface Task {
@@ -371,7 +360,6 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
   }
 
   return (
-    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Box>
         {/* Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
@@ -656,11 +644,13 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
                 </Select>
               </FormControl>
               
-              <DateTimePicker
+              <TextField
                 label="Due Date"
-                value={formData.dueDate}
-                onChange={(date) => date && setFormData({ ...formData, dueDate: date })}
-                slotProps={{ textField: { fullWidth: true } }}
+                type="datetime-local"
+                value={formData.dueDate ? formData.dueDate.toISOString().slice(0, 16) : ''}
+                onChange={(e) => setFormData({ ...formData, dueDate: new Date(e.target.value) })}
+                fullWidth
+                InputLabelProps={{ shrink: true }}
               />
             </Box>
           </DialogContent>
@@ -684,7 +674,7 @@ export const TaskManager: React.FC<TaskManagerProps> = ({
           </DialogActions>
         </Dialog>
       </Box>
-    </LocalizationProvider>
+
   );
 };
 
