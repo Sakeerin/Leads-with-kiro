@@ -237,6 +237,8 @@ export enum ActivityType {
   LEAD_UPDATED = 'lead_updated',
   LEAD_ASSIGNED = 'lead_assigned',
   LEAD_REASSIGNED = 'lead_reassigned',
+  LEAD_CONVERTED = 'lead_converted',
+  LEAD_CLOSED = 'lead_closed',
   STATUS_CHANGED = 'status_changed',
   SCORE_UPDATED = 'score_updated',
   EMAIL_SENT = 'email_sent',
@@ -254,7 +256,10 @@ export enum ActivityType {
   TASK_COMPLETED = 'task_completed',
   TASK_CANCELLED = 'task_cancelled',
   NOTE_ADDED = 'note_added',
-  FILE_UPLOADED = 'file_uploaded'
+  FILE_UPLOADED = 'file_uploaded',
+  ACCOUNT_CREATED = 'account_created',
+  CONTACT_CREATED = 'contact_created',
+  OPPORTUNITY_CREATED = 'opportunity_created'
 }
 
 export enum UserRole {
@@ -592,6 +597,122 @@ export enum CommunicationDirection {
   OUTBOUND = 'outbound'
 }
 
+// Lead Conversion Types
+export interface Account {
+  id: string;
+  name: string;
+  industry?: string;
+  size?: CompanySize;
+  website?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postalCode?: string;
+  description?: string;
+  customFields: Record<string, any>;
+  metadata: {
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy: string;
+    isActive: boolean;
+  };
+}
+
+export interface Contact {
+  id: string;
+  accountId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  mobile?: string;
+  title?: string;
+  department?: string;
+  isPrimary: boolean;
+  isDecisionMaker: boolean;
+  customFields: Record<string, any>;
+  metadata: {
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy: string;
+    isActive: boolean;
+  };
+}
+
+export interface Opportunity {
+  id: string;
+  name: string;
+  accountId: string;
+  primaryContactId?: string;
+  ownerId: string;
+  stage: OpportunityStage;
+  amount?: number;
+  currency: string;
+  probability: number;
+  expectedCloseDate?: Date;
+  actualCloseDate?: Date;
+  closeReason?: CloseReason;
+  closeNotes?: string;
+  leadSource?: LeadChannel;
+  campaign?: string;
+  description?: string;
+  customFields: Record<string, any>;
+  metadata: {
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy: string;
+    isActive: boolean;
+  };
+}
+
+export interface LeadConversion {
+  id: string;
+  leadId: string;
+  accountId?: string;
+  contactId?: string;
+  opportunityId?: string;
+  conversionType: ConversionType;
+  leadDataSnapshot: Lead;
+  conversionMapping?: Record<string, any>;
+  notes?: string;
+  metadata: {
+    createdAt: Date;
+    updatedAt: Date;
+    convertedBy: string;
+  };
+}
+
+export enum OpportunityStage {
+  PROSPECTING = 'prospecting',
+  QUALIFICATION = 'qualification',
+  NEEDS_ANALYSIS = 'needs_analysis',
+  PROPOSAL = 'proposal',
+  NEGOTIATION = 'negotiation',
+  CLOSED_WON = 'closed_won',
+  CLOSED_LOST = 'closed_lost'
+}
+
+export enum CloseReason {
+  WON_NEW_BUSINESS = 'won_new_business',
+  WON_EXPANSION = 'won_expansion',
+  WON_RENEWAL = 'won_renewal',
+  LOST_COMPETITOR = 'lost_competitor',
+  LOST_BUDGET = 'lost_budget',
+  LOST_TIMING = 'lost_timing',
+  LOST_NO_DECISION = 'lost_no_decision',
+  DISQUALIFIED_NOT_FIT = 'disqualified_not_fit',
+  DISQUALIFIED_BUDGET = 'disqualified_budget',
+  DISQUALIFIED_AUTHORITY = 'disqualified_authority'
+}
+
+export enum ConversionType {
+  FULL = 'full',
+  ACCOUNT_ONLY = 'account_only',
+  CONTACT_ONLY = 'contact_only'
+}
+
 // Database table interfaces for communication
 export interface EmailTemplateTable {
   id: string;
@@ -674,4 +795,83 @@ export interface CommunicationHistoryTable {
   performed_at: Date;
   related_email_id?: string;
   related_task_id?: string;
+}
+
+// Database table interfaces for conversion entities
+export interface AccountTable {
+  id: string;
+  name: string;
+  industry?: string;
+  size?: CompanySize;
+  website?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  postal_code?: string;
+  description?: string;
+  custom_fields?: string; // JSON string
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+export interface ContactTable {
+  id: string;
+  account_id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone?: string;
+  mobile?: string;
+  title?: string;
+  department?: string;
+  is_primary: boolean;
+  is_decision_maker: boolean;
+  custom_fields?: string; // JSON string
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+export interface OpportunityTable {
+  id: string;
+  name: string;
+  account_id: string;
+  primary_contact_id?: string;
+  owner_id: string;
+  stage: OpportunityStage;
+  amount?: number;
+  currency: string;
+  probability: number;
+  expected_close_date?: Date;
+  actual_close_date?: Date;
+  close_reason?: CloseReason;
+  close_notes?: string;
+  lead_source?: LeadChannel;
+  campaign?: string;
+  description?: string;
+  custom_fields?: string; // JSON string
+  is_active: boolean;
+  created_at: Date;
+  updated_at: Date;
+  created_by: string;
+}
+
+export interface LeadConversionTable {
+  id: string;
+  lead_id: string;
+  account_id?: string;
+  contact_id?: string;
+  opportunity_id?: string;
+  conversion_type: ConversionType;
+  lead_data_snapshot: string; // JSON string
+  conversion_mapping?: string; // JSON string
+  notes?: string;
+  created_at: Date;
+  updated_at: Date;
+  converted_by: string;
 }

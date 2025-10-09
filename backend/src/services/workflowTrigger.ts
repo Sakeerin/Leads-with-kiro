@@ -104,6 +104,48 @@ export class WorkflowTrigger {
   }
 
   /**
+   * Trigger workflows when a lead is converted
+   */
+  async onLeadConverted(
+    leadId: string,
+    convertedBy: string,
+    conversionType: string,
+    conversionData: { accountId?: string; contactId?: string; opportunityId?: string }
+  ): Promise<void> {
+    try {
+      await workflowEngine.executeTriggeredWorkflows(
+        'lead_converted',
+        leadId,
+        convertedBy,
+        { conversionType, ...conversionData }
+      );
+    } catch (error) {
+      logger.error('Error triggering lead_converted workflows:', error);
+    }
+  }
+
+  /**
+   * Trigger workflows when a lead is closed
+   */
+  async onLeadClosed(
+    leadId: string,
+    closedBy: string,
+    status: string,
+    closeReason: string
+  ): Promise<void> {
+    try {
+      await workflowEngine.executeTriggeredWorkflows(
+        'lead_closed',
+        leadId,
+        closedBy,
+        { status, closeReason }
+      );
+    } catch (error) {
+      logger.error('Error triggering lead_closed workflows:', error);
+    }
+  }
+
+  /**
    * Manually trigger workflows
    */
   async triggerManual(

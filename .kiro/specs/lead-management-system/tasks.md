@@ -72,7 +72,6 @@
   - _Requirements: 7.1, 7.4, 7.2_
 
 - [x] 10. Develop workflow automation system
-
   - Create workflow engine that can execute predefined automation sequences
   - Implement trigger system for lead created, assigned, score changed, and status updated events
   - Build automated email sequences and follow-up task creation
@@ -80,7 +79,8 @@
   - Create notification system for sales representatives and managers
   - _Requirements: 6.3, 6.4_
 
-- [ ] 11. Build lead conversion and handover functionality
+- [x] 11. Build lead conversion and handover functionality
+
   - Implement lead to opportunity conversion with data transfer
   - Create account and contact creation during conversion process
   - Add duplicate account prevention during conversion

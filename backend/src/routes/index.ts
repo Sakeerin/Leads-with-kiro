@@ -12,6 +12,7 @@ import activityRoutes from './activities';
 import notificationRoutes from './notifications';
 import communicationRoutes from './communication';
 import workflowRoutes from './workflow';
+import leadConversionRoutes from './leadConversion';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.use('/activities', activityRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/communication', communicationRoutes);
 router.use('/workflows', workflowRoutes);
+router.use('/', leadConversionRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {
