@@ -16,13 +16,14 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
     const authHeader = req.headers.authorization;
     
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
           message: 'Access token is required',
           timestamp: new Date().toISOString()
         }
       });
+      return;
     }
 
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
@@ -33,13 +34,14 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
       // Verify user still exists and is active
       const user = await User.findById(decoded.userId);
       if (!user || !user.is_active) {
-        return res.status(401).json({
+        res.status(401).json({
           error: {
             code: 'UNAUTHORIZED',
             message: 'User account is inactive or not found',
             timestamp: new Date().toISOString()
           }
         });
+        return;
       }
 
       req.user = {
@@ -50,40 +52,46 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
 
       next();
     } catch (tokenError) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'INVALID_TOKEN',
           message: 'Invalid or expired access token',
           timestamp: new Date().toISOString()
         }
       });
+      return;
     }
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(500).json({
+    res.status(500).json({
       error: {
         code: 'INTERNAL_ERROR',
         message: 'Authentication service error',
         timestamp: new Date().toISOString()
       }
     });
+    return;
   }
 };
+
+// Alias for backward compatibility
+export const authenticateToken = authenticate;
 
 export const authorize = (allowedRoles: UserRole[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
           message: 'Authentication required',
           timestamp: new Date().toISOString()
         }
       });
+      return;
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
+      res.status(403).json({
         error: {
           code: 'FORBIDDEN',
           message: 'Insufficient permissions',
@@ -94,6 +102,7 @@ export const authorize = (allowedRoles: UserRole[]) => {
           }
         }
       });
+      return;
     }
 
     next();
@@ -115,35 +124,39 @@ export const requireReadAccess = authorize([
 
 // Custom authorization for resource ownership
 export const requireOwnershipOrRole = (allowedRoles: UserRole[], resourceUserIdField: string = 'userId') => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.user) {
-      return res.status(401).json({
+      res.status(401).json({
         error: {
           code: 'UNAUTHORIZED',
           message: 'Authentication required',
           timestamp: new Date().toISOString()
         }
       });
+      return;
     }
 
     // Check if user has required role
     if (allowedRoles.includes(req.user.role)) {
-      return next();
+      next();
+      return;
     }
 
     // Check if user owns the resource
     const resourceUserId = req.params[resourceUserIdField] || req.body[resourceUserIdField];
     if (resourceUserId === req.user.userId) {
-      return next();
+      next();
+      return;
     }
 
-    return res.status(403).json({
+    res.status(403).json({
       error: {
         code: 'FORBIDDEN',
         message: 'Access denied: insufficient permissions or not resource owner',
         timestamp: new Date().toISOString()
       }
     });
+    return;
   };
 };
 
@@ -162,11 +175,12 @@ export const rateLimit = (maxRequests: number = 100, windowMs: number = 15 * 60 
         count: 1,
         resetTime: now + windowMs
       });
-      return next();
+      next();
+      return;
     }
     
     if (clientData.count >= maxRequests) {
-      return res.status(429).json({
+      res.status(429).json({
         error: {
           code: 'RATE_LIMIT_EXCEEDED',
           message: 'Too many requests, please try again later',
@@ -178,6 +192,7 @@ export const rateLimit = (maxRequests: number = 100, windowMs: number = 15 * 60 
           }
         }
       });
+      return;
     }
     
     clientData.count++;
@@ -187,11 +202,11 @@ export const rateLimit = (maxRequests: number = 100, windowMs: number = 15 * 60 
 
 // Input validation middleware
 export const validateInput = (schema: any) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const { error } = schema.validate(req.body);
     
     if (error) {
-      return res.status(400).json({
+      res.status(400).json({
         error: {
           code: 'VALIDATION_ERROR',
           message: 'Invalid input data',
@@ -202,6 +217,7 @@ export const validateInput = (schema: any) => {
           }))
         }
       });
+      return;
     }
     
     next();

@@ -247,15 +247,54 @@ export interface PaginationParams {
 }
 
 export interface SearchFilters {
-  searchTerm?: string;
   status?: string[];
   assignedTo?: string[];
   source?: string[];
   scoreBand?: string[];
   dateRange?: {
-    start: Date;
-    end: Date;
+    field: 'created_at' | 'updated_at' | 'follow_up_date';
+    from?: Date;
+    to?: Date;
   };
+  customFields?: Record<string, any>;
+}
+
+export interface SearchQuery {
+  searchTerm?: string;
+  filters?: SearchFilters;
+  sort?: {
+    field: string;
+    order: 'asc' | 'desc';
+  };
+  page?: number;
+  size?: number;
+}
+
+export interface SearchResult {
+  leads: Lead[];
+  total: number;
+  aggregations?: {
+    status: Array<{ key: string; doc_count: number }>;
+    source: Array<{ key: string; doc_count: number }>;
+    assignedTo: Array<{ key: string; doc_count: number }>;
+    scoreBand: Array<{ key: string; doc_count: number }>;
+  };
+}
+
+export interface SearchSuggestion {
+  text: string;
+  type: 'company' | 'contact' | 'email' | 'phone';
+  score: number;
+}
+
+export interface SavedSearch {
+  id: string;
+  name: string;
+  query: SearchQuery;
+  userId: string;
+  isPublic: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface BulkOperation {

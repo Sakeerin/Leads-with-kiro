@@ -6,6 +6,7 @@ import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import apiRoutes from './routes';
 import { errorHandler } from './utils/errors';
+import { SearchService } from './services/searchService';
 
 // Load environment variables
 dotenv.config();
@@ -77,9 +78,26 @@ app.use('*', (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  
+  // Initialize Elasticsearch
+  try {
+    SearchService.initialize();
+    
+    // Wait a bit for Elasticsearch to be ready, then create indices
+    setTimeout(async () => {
+      try {
+        await SearchService.createIndices();
+        console.log('✅ Elasticsearch indices created successfully');
+      } catch (error) {
+        console.warn('⚠️ Failed to create Elasticsearch indices:', error);
+      }
+    }, 5000);
+  } catch (error) {
+    console.warn('⚠️ Failed to initialize Elasticsearch:', error);
+  }
 });
 
 export default app;

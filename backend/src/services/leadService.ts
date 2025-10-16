@@ -7,6 +7,7 @@ import { DuplicateDetectionEngine, DuplicateCandidate } from '../utils/duplicate
 import { DataValidator } from '../utils/dataValidation';
 import { LeadMergeService, MergePreview, MergeRequest, MergeResult } from './leadMergeService';
 import { workflowTrigger } from './workflowTrigger';
+import { SearchService } from './searchService';
 
 export interface CreateLeadRequest {
   company: {
@@ -309,6 +310,13 @@ export class LeadService {
       console.warn('Failed to trigger lead creation workflows:', error);
     }
 
+    // Index the lead in Elasticsearch
+    try {
+      await SearchService.indexLead(lead);
+    } catch (error) {
+      console.warn('Failed to index lead in Elasticsearch:', error);
+    }
+
     return lead;
   }
 
@@ -470,6 +478,13 @@ export class LeadService {
       console.warn('Failed to trigger workflow automation:', error);
     }
 
+    // Update the lead in Elasticsearch
+    try {
+      await SearchService.indexLead(updatedLead);
+    } catch (error) {
+      console.warn('Failed to update lead in Elasticsearch:', error);
+    }
+
     return updatedLead;
   }
 
@@ -490,6 +505,13 @@ export class LeadService {
     await Activity.logLeadUpdated(id, deletedBy, {
       deleted: { old: false, new: true }
     });
+
+    // Remove from Elasticsearch
+    try {
+      await SearchService.removeLead(id);
+    } catch (error) {
+      console.warn('Failed to remove lead from Elasticsearch:', error);
+    }
   }
 
   /**
@@ -513,6 +535,13 @@ export class LeadService {
     await Activity.logLeadUpdated(id, restoredBy, {
       restored: { old: false, new: true }
     });
+
+    // Re-index in Elasticsearch
+    try {
+      await SearchService.indexLead(restoredLead);
+    } catch (error) {
+      console.warn('Failed to re-index restored lead in Elasticsearch:', error);
+    }
 
     return restoredLead;
   }

@@ -28,6 +28,22 @@ services:
     networks:
       - lead-management-network
 
+  # Elasticsearch for search
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: lead-management-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - lead-management-network
+
   # Backend API (for development)
   backend:
     build:
@@ -39,6 +55,7 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/lead_management
       REDIS_URL: redis://redis:6379
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     ports:
       - "3001:3001"
     volumes:
@@ -47,6 +64,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - elasticsearch
     networks:
       - lead-management-network
     command: npm run dev
@@ -73,6 +91,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  elasticsearch_data:
 
 networks:
   lead-management-network:

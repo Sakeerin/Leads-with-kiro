@@ -24,14 +24,17 @@ import {
   Add as AddIcon,
   ViewList as ViewListIcon,
   ViewModule as ViewModuleIcon,
-
+  Search as SearchIcon,
 } from '@mui/icons-material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { LeadService } from '../services/leadService';
+import { SearchService } from '../services/searchService';
 import { LeadForm } from '../components/LeadForm';
 import { LeadList } from '../components/LeadList';
 import { LeadKanban } from '../components/LeadKanban';
 import { LeadDetail } from '../components/LeadDetail';
+import { AdvancedSearch } from '../components/AdvancedSearch';
+import { SearchResults } from '../components/SearchResults';
 import { 
   Lead, 
   LeadStatus, 
@@ -39,10 +42,11 @@ import {
   PaginationParams, 
   BulkOperation,
   Task,
- 
+  SearchQuery,
+  SearchResult,
 } from '../types';
 
-type ViewMode = 'list' | 'kanban' | 'detail';
+type ViewMode = 'list' | 'kanban' | 'detail' | 'search';
 
 export const LeadManagement: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -68,6 +72,9 @@ export const LeadManagement: React.FC = () => {
   });
 
   const [filters, setFilters] = useState<SearchFilters>({});
+  const [searchQuery, setSearchQuery] = useState<SearchQuery>({});
+  const [searchResults, setSearchResults] = useState<SearchResult | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const queryClient = useQueryClient();
 
@@ -271,6 +278,46 @@ export const LeadManagement: React.FC = () => {
     createTaskMutation.mutate({ leadId, taskData });
   };
 
+  const handleSearch = async (query: SearchQuery) => {
+    setSearchLoading(true);
+    setSearchQuery(query);
+    
+    try {
+      const response = await SearchService.search(query);
+      setSearchResults(response.data);
+      
+      // Switch to search view if not already there
+      if (viewMode !== 'search') {
+        setViewMode('search');
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+      showSnackbar('Search failed', 'error');
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchFilterClick = (filterType: string, value: string) => {
+    const newQuery = { ...searchQuery };
+    
+    if (!newQuery.filters) {
+      newQuery.filters = {};
+    }
+
+    const currentValues = newQuery.filters[filterType as keyof SearchFilters] as string[] || [];
+    
+    if (currentValues.includes(value)) {
+      // Remove filter
+      newQuery.filters[filterType as keyof SearchFilters] = currentValues.filter(v => v !== value) as any;
+    } else {
+      // Add filter
+      newQuery.filters[filterType as keyof SearchFilters] = [...currentValues, value] as any;
+    }
+
+    handleSearch(newQuery);
+  };
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -292,6 +339,9 @@ export const LeadManagement: React.FC = () => {
               <ToggleButton value="kanban">
                 <ViewModuleIcon />
               </ToggleButton>
+              <ToggleButton value="search">
+                <SearchIcon />
+              </ToggleButton>
             </ToggleButtonGroup>
             <Button
               variant="contained"
@@ -309,6 +359,21 @@ export const LeadManagement: React.FC = () => {
 
       {/* Content */}
       <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+        {viewMode === 'search' && (
+          <Box sx={{ p: 2 }}>
+            <AdvancedSearch
+              onSearch={handleSearch}
+              initialQuery={searchQuery}
+              loading={searchLoading}
+            />
+            <SearchResults
+              results={searchResults!}
+              loading={searchLoading}
+              onFilterClick={handleSearchFilterClick}
+            />
+          </Box>
+        )}
+
         {viewMode === 'list' && (
           <LeadList
             leads={leads}
