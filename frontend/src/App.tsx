@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Container, Typography, Box, AppBar, Toolbar, Button, Stack } from '@mui/material';
 import { Link, useLocation } from 'react-router-dom';
 import { LeadManagement } from './pages/LeadManagement';
+import { ReportingDashboard } from './components/ReportingDashboard';
 
 function App() {
   const location = useLocation();
@@ -28,6 +29,15 @@ function App() {
             <Button
               color="inherit"
               component={Link}
+              to="/reports"
+              variant={location.pathname === '/reports' ? 'outlined' : 'text'}
+              sx={{ color: 'white', borderColor: 'white' }}
+            >
+              Reports
+            </Button>
+            <Button
+              color="inherit"
+              component={Link}
               to="/leads"
               variant={location.pathname === '/leads' ? 'outlined' : 'text'}
               sx={{ color: 'white', borderColor: 'white' }}
@@ -47,8 +57,13 @@ function App() {
                 Dashboard
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Welcome to the Lead Management System. Dashboard functionality will be implemented in upcoming tasks.
+                Welcome to the Lead Management System. Use the navigation above to access different sections.
               </Typography>
+            </Container>
+          } />
+          <Route path="/reports" element={
+            <Container maxWidth="xl" sx={{ py: 2 }}>
+              <ReportingDashboard />
             </Container>
           } />
           <Route path="/leads" element={<LeadManagement />} />
