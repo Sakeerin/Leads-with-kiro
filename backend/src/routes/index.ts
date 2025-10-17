@@ -16,6 +16,7 @@ import leadConversionRoutes from './leadConversion';
 import searchRoutes from './search';
 import reportingRoutes from './reporting';
 import attachmentRoutes from './attachments';
+import importExportRoutes from './importExport';
 
 const router = Router();
 
@@ -46,6 +47,7 @@ router.use('/', leadConversionRoutes);
 router.use('/', searchRoutes);
 router.use('/reporting', reportingRoutes);
 router.use('/', attachmentRoutes);
+router.use('/', importExportRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

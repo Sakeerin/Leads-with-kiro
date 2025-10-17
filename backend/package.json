@@ -25,6 +25,7 @@
     "bcryptjs": "^2.4.3",
     "bull": "^4.12.2",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "helmet": "^7.1.0",
@@ -32,12 +33,14 @@
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.0.1",
     "multer": "^1.4.5-lts.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "redis": "^4.6.10",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.0",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -47,6 +50,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "@types/multer": "^1.4.13",
     "@types/node": "^20.8.10",
+    "@types/node-cron": "^3.0.11",
     "@types/nodemailer": "^6.4.14",
     "@types/pg": "^8.10.7",
     "@types/supertest": "^2.0.16",

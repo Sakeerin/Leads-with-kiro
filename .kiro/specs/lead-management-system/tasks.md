@@ -104,7 +104,6 @@
   - _Requirements: 8.1, 8.2_
 
 - [x] 14. Build reporting and analytics dashboard
-
   - Create funnel metrics dashboard showing conversion rates at each stage
   - Implement time-to-first-touch and SLA compliance reporting
   - Build source effectiveness reports with cost-per-lead and conversion rates
@@ -113,11 +112,6 @@
   - _Requirements: 8.3, 8.4, 8.5_
 
 - [x] 15. Implement file upload and attachment management
-
-
-
-
-
   - Create secure file upload system with virus scanning
   - Implement file storage using cloud storage (AWS S3 or compatible)
   - Add file association with lead records and activity logging
@@ -125,7 +119,8 @@
   - Implement file access control based on user permissions
   - _Requirements: 1.6, 10.5_
 
-- [ ] 16. Add import/export functionality
+- [x] 16. Add import/export functionality
+
   - Create CSV/XLSX import system with data validation and error reporting
   - Implement duplicate detection during import process
   - Build export functionality for leads, reports, and analytics data
@@ -133,7 +128,9 @@
   - Create import history and rollback capabilities
   - _Requirements: 1.3, 8.4_
 
-- [ ] 17. Implement system configuration and customization
+- [-] 17. Implement system configuration and customization
+
+
   - Create custom field management system for leads
   - Build picklist management for Status, Source, Product Type, and AdType
   - Implement configurable status workflows with Thai/English labels

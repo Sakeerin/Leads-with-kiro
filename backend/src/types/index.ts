@@ -953,3 +953,289 @@ export interface AttachmentTable {
   updated_at: Date;
   is_active: boolean;
 }
+
+// Import/Export Types
+export interface ImportHistory {
+  id: string;
+  filename: string;
+  originalFilename: string;
+  fileType: ImportFileType;
+  totalRecords: number;
+  successfulRecords: number;
+  failedRecords: number;
+  duplicateRecords: number;
+  status: ImportStatus;
+  validationErrors?: ValidationError[];
+  duplicateReport?: DuplicateReport;
+  fieldMapping?: FieldMapping;
+  importedBy: string;
+  rolledBackBy?: string;
+  startedAt: Date;
+  completedAt?: Date;
+  rolledBackAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ImportRecord {
+  id: string;
+  importId: string;
+  rowNumber: number;
+  leadId?: string;
+  status: ImportRecordStatus;
+  originalData: Record<string, any>;
+  processedData?: Record<string, any>;
+  validationErrors?: string[];
+  duplicateMatches?: DuplicateMatch[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ExportHistory {
+  id: string;
+  filename: string;
+  exportType: ExportType;
+  fileFormat: ExportFileFormat;
+  recordCount: number;
+  filtersApplied?: Record<string, any>;
+  columnsExported?: string[];
+  filePath?: string;
+  fileSize?: number;
+  status: ExportStatus;
+  errorMessage?: string;
+  exportedBy: string;
+  startedAt: Date;
+  completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ScheduledReport {
+  id: string;
+  name: string;
+  description?: string;
+  reportType: ReportType;
+  fileFormat: ExportFileFormat;
+  filters?: Record<string, any>;
+  columns?: string[];
+  cronSchedule: string;
+  emailRecipients: string[];
+  emailSubject?: string;
+  emailBody?: string;
+  isActive: boolean;
+  lastRunAt?: Date;
+  nextRunAt?: Date;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ScheduledReportExecution {
+  id: string;
+  scheduledReportId: string;
+  status: ExecutionStatus;
+  filePath?: string;
+  recordCount?: number;
+  errorMessage?: string;
+  startedAt: Date;
+  completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ImportRequest {
+  file: Express.Multer.File;
+  fieldMapping?: FieldMapping;
+  skipDuplicates?: boolean;
+  updateExisting?: boolean;
+  validateOnly?: boolean;
+}
+
+export interface ImportResult {
+  importId: string;
+  status: ImportStatus;
+  totalRecords: number;
+  successfulRecords: number;
+  failedRecords: number;
+  duplicateRecords: number;
+  validationErrors: ValidationError[];
+  duplicateReport: DuplicateReport;
+  processedRecords: ImportRecord[];
+}
+
+export interface ExportRequest {
+  exportType: ExportType;
+  fileFormat: ExportFileFormat;
+  filters?: Record<string, any>;
+  columns?: string[];
+  includeHeaders?: boolean;
+}
+
+export interface ExportResult {
+  exportId: string;
+  filename: string;
+  filePath: string;
+  fileSize: number;
+  recordCount: number;
+  downloadUrl: string;
+}
+
+export interface FieldMapping {
+  [csvColumn: string]: string; // Maps CSV column to Lead field
+}
+
+export interface ValidationError {
+  row: number;
+  field: string;
+  value: any;
+  message: string;
+  code: string;
+}
+
+export interface DuplicateReport {
+  totalDuplicates: number;
+  duplicatesByType: Record<string, number>;
+  duplicateDetails: Array<{
+    row: number;
+    matches: DuplicateMatch[];
+  }>;
+}
+
+// Enums for import/export
+export enum ImportFileType {
+  CSV = 'csv',
+  XLSX = 'xlsx'
+}
+
+export enum ImportStatus {
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  ROLLED_BACK = 'rolled_back'
+}
+
+export enum ImportRecordStatus {
+  SUCCESS = 'success',
+  FAILED = 'failed',
+  DUPLICATE = 'duplicate',
+  SKIPPED = 'skipped'
+}
+
+export enum ExportType {
+  LEADS = 'leads',
+  REPORTS = 'reports',
+  ANALYTICS = 'analytics'
+}
+
+export enum ExportFileFormat {
+  CSV = 'csv',
+  XLSX = 'xlsx',
+  PDF = 'pdf'
+}
+
+export enum ExportStatus {
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed'
+}
+
+export enum ReportType {
+  LEADS = 'leads',
+  ANALYTICS = 'analytics',
+  PERFORMANCE = 'performance'
+}
+
+export enum ExecutionStatus {
+  RUNNING = 'running',
+  COMPLETED = 'completed',
+  FAILED = 'failed'
+}
+
+// Database table interfaces for import/export
+export interface ImportHistoryTable {
+  id: string;
+  filename: string;
+  original_filename: string;
+  file_type: ImportFileType;
+  total_records: number;
+  successful_records: number;
+  failed_records: number;
+  duplicate_records: number;
+  status: ImportStatus;
+  validation_errors?: string; // JSON string
+  duplicate_report?: string; // JSON string
+  field_mapping?: string; // JSON string
+  imported_by: string;
+  rolled_back_by?: string;
+  started_at: Date;
+  completed_at?: Date;
+  rolled_back_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ImportRecordTable {
+  id: string;
+  import_id: string;
+  row_number: number;
+  lead_id?: string;
+  status: ImportRecordStatus;
+  original_data: string; // JSON string
+  processed_data?: string; // JSON string
+  validation_errors?: string; // JSON string
+  duplicate_matches?: string; // JSON string
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ExportHistoryTable {
+  id: string;
+  filename: string;
+  export_type: ExportType;
+  file_format: ExportFileFormat;
+  record_count: number;
+  filters_applied?: string; // JSON string
+  columns_exported?: string; // JSON string
+  file_path?: string;
+  file_size?: number;
+  status: ExportStatus;
+  error_message?: string;
+  exported_by: string;
+  started_at: Date;
+  completed_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ScheduledReportTable {
+  id: string;
+  name: string;
+  description?: string;
+  report_type: ReportType;
+  file_format: ExportFileFormat;
+  filters?: string; // JSON string
+  columns?: string; // JSON string
+  cron_schedule: string;
+  email_recipients: string; // JSON string
+  email_subject?: string;
+  email_body?: string;
+  is_active: boolean;
+  last_run_at?: Date;
+  next_run_at?: Date;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface ScheduledReportExecutionTable {
+  id: string;
+  scheduled_report_id: string;
+  status: ExecutionStatus;
+  file_path?: string;
+  record_count?: number;
+  error_message?: string;
+  started_at: Date;
+  completed_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
