@@ -15,6 +15,7 @@ import workflowRoutes from './workflow';
 import leadConversionRoutes from './leadConversion';
 import searchRoutes from './search';
 import reportingRoutes from './reporting';
+import attachmentRoutes from './attachments';
 
 const router = Router();
 
@@ -44,6 +45,7 @@ router.use('/workflows', workflowRoutes);
 router.use('/', leadConversionRoutes);
 router.use('/', searchRoutes);
 router.use('/reporting', reportingRoutes);
+router.use('/', attachmentRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

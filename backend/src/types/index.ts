@@ -713,6 +713,61 @@ export enum ConversionType {
   CONTACT_ONLY = 'contact_only'
 }
 
+// File Attachment Types
+export interface Attachment {
+  id: string;
+  leadId: string;
+  filename: string;
+  originalFilename: string;
+  contentType: string;
+  size: number;
+  storagePath: string;
+  storageProvider: string;
+  bucketName?: string;
+  fileHash: string;
+  virusScanned: boolean;
+  virusClean?: boolean;
+  scanResult?: string;
+  metadata?: Record<string, any>;
+  uploadedBy: string;
+  uploadedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  isActive: boolean;
+}
+
+export interface AttachmentUploadRequest {
+  leadId: string;
+  file: Express.Multer.File;
+  metadata?: Record<string, any>;
+}
+
+export interface AttachmentDownloadRequest {
+  attachmentId: string;
+  inline?: boolean; // For preview vs download
+}
+
+export interface VirusScanResult {
+  isClean: boolean;
+  scanResult?: string;
+  scanDate: Date;
+  scanEngine?: string;
+}
+
+export enum AttachmentStorageProvider {
+  S3 = 's3',
+  LOCAL = 'local',
+  AZURE = 'azure',
+  GCS = 'gcs'
+}
+
+export enum AttachmentAccessLevel {
+  OWNER = 'owner',
+  ASSIGNED = 'assigned',
+  TEAM = 'team',
+  ADMIN = 'admin'
+}
+
 // Database table interfaces for communication
 export interface EmailTemplateTable {
   id: string;
@@ -874,4 +929,27 @@ export interface LeadConversionTable {
   created_at: Date;
   updated_at: Date;
   converted_by: string;
+}
+
+// Database table interface for attachments
+export interface AttachmentTable {
+  id: string;
+  lead_id: string;
+  filename: string;
+  original_filename: string;
+  content_type: string;
+  size: number;
+  storage_path: string;
+  storage_provider: string;
+  bucket_name?: string;
+  file_hash: string;
+  virus_scanned: boolean;
+  virus_clean?: boolean;
+  scan_result?: string;
+  metadata?: string; // JSON string
+  uploaded_by: string;
+  uploaded_at: Date;
+  created_at: Date;
+  updated_at: Date;
+  is_active: boolean;
 }
