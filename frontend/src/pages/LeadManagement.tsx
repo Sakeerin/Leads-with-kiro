@@ -321,17 +321,35 @@ export const LeadManagement: React.FC = () => {
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Typography variant="h4" fontWeight="bold">
+      <Paper sx={{ p: { xs: 1, md: 2 }, mb: 2 }}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          justifyContent="space-between" 
+          alignItems={{ xs: 'stretch', sm: 'center' }}
+          spacing={{ xs: 2, sm: 0 }}
+        >
+          <Typography 
+            variant="h4"
+            fontWeight="bold"
+            sx={{ 
+              textAlign: { xs: 'center', sm: 'left' },
+              fontSize: { xs: '1.5rem', md: '2rem' }
+            }}
+          >
             Lead Management
           </Typography>
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack 
+            direction="row" 
+            spacing={2} 
+            alignItems="center"
+            justifyContent={{ xs: 'center', sm: 'flex-end' }}
+          >
             <ToggleButtonGroup
               value={viewMode}
               exclusive
               onChange={(_, newMode) => newMode && handleViewModeChange(newMode)}
               size="small"
+              sx={{ display: { xs: 'none', sm: 'flex' } }}
             >
               <ToggleButton value="list">
                 <ViewListIcon />
@@ -350,11 +368,46 @@ export const LeadManagement: React.FC = () => {
                 setEditingLead(null);
                 setShowLeadForm(true);
               }}
+              sx={{ display: { xs: 'none', md: 'flex' } }}
             >
               New Lead
             </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setEditingLead(null);
+                setShowLeadForm(true);
+              }}
+              sx={{ display: { xs: 'flex', md: 'none' } }}
+            >
+              Add
+            </Button>
           </Stack>
         </Stack>
+        
+        {/* Mobile View Mode Selector */}
+        <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mt: 2 }}>
+          <ToggleButtonGroup
+            value={viewMode}
+            exclusive
+            onChange={(_, newMode) => newMode && handleViewModeChange(newMode)}
+            size="small"
+            fullWidth
+          >
+            <ToggleButton value="list">
+              <ViewListIcon sx={{ mr: 1 }} />
+              List
+            </ToggleButton>
+            <ToggleButton value="kanban">
+              <ViewModuleIcon sx={{ mr: 1 }} />
+              Board
+            </ToggleButton>
+            <ToggleButton value="search">
+              <SearchIcon sx={{ mr: 1 }} />
+              Search
+            </ToggleButton>
+          </ToggleButtonGroup>
+        </Box>
       </Paper>
 
       {/* Content */}

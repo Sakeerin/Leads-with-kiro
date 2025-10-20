@@ -17,6 +17,7 @@ import searchRoutes from './search';
 import reportingRoutes from './reporting';
 import attachmentRoutes from './attachments';
 import importExportRoutes from './importExport';
+import configurationRoutes from './configuration';
 
 const router = Router();
 
@@ -48,6 +49,7 @@ router.use('/', searchRoutes);
 router.use('/reporting', reportingRoutes);
 router.use('/', attachmentRoutes);
 router.use('/', importExportRoutes);
+router.use('/configuration', configurationRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {

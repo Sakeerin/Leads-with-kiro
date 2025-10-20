@@ -13,6 +13,8 @@ import {
   Badge,
   Stack,
   Tooltip,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   MoreVert as MoreVertIcon,
@@ -62,6 +64,8 @@ interface LeadCardProps {
 
 const LeadCard: React.FC<LeadCardProps> = ({ lead, index, onEdit, onDelete, onAssign }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -90,8 +94,12 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, index, onEdit, onDelete, onAs
             cursor: 'grab',
             transform: snapshot.isDragging ? 'rotate(5deg)' : 'none',
             boxShadow: snapshot.isDragging ? 4 : 1,
+            minHeight: { xs: 120, md: 'auto' }, // Minimum height for touch targets
             '&:hover': {
               boxShadow: 2,
+            },
+            '&:active': {
+              transform: isMobile ? 'scale(0.98)' : 'none',
             },
           }}
         >
@@ -115,11 +123,15 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, index, onEdit, onDelete, onAs
                   }}
                 />
                 <IconButton
-                  size="small"
+                  size={isMobile ? "medium" : "small"}
                   onClick={handleMenuOpen}
-                  sx={{ p: 0.5 }}
+                  sx={{ 
+                    p: isMobile ? 1 : 0.5,
+                    minWidth: { xs: 44, md: 'auto' }, // Touch-friendly size
+                    minHeight: { xs: 44, md: 'auto' }
+                  }}
                 >
-                  <MoreVertIcon fontSize="small" />
+                  <MoreVertIcon fontSize={isMobile ? "medium" : "small"} />
                 </IconButton>
               </Box>
             </Box>
@@ -203,8 +215,9 @@ const LeadCard: React.FC<LeadCardProps> = ({ lead, index, onEdit, onDelete, onAs
               Email
             </MenuItem>
             <MenuItem onClick={() => {
-              if (lead.contact.phone) {
-                window.open(`tel:${lead.contact.phone}`);
+              if (lead.contact.phone || lead.contact.mobile) {
+                const phoneNumber = lead.contact.mobile || lead.contact.phone;
+                window.open(`tel:${phoneNumber}`);
               }
               handleMenuClose();
             }}>
@@ -235,6 +248,7 @@ export const LeadKanban: React.FC<LeadKanbanProps> = ({
   onLeadDelete,
   onLeadAssign,
 }) => {
+  
   // Group leads by status
   const columns = statusColumns.map(column => ({
     ...column,
@@ -270,22 +284,34 @@ export const LeadKanban: React.FC<LeadKanbanProps> = ({
         <Box
           sx={{
             display: 'flex',
-            gap: 2,
+            gap: { xs: 1, md: 2 },
             height: '100%',
             overflowX: 'auto',
             pb: 2,
+            px: { xs: 1, md: 0 },
+            // Smooth scrolling on mobile
+            scrollBehavior: 'smooth',
+            '&::-webkit-scrollbar': {
+              height: { xs: 8, md: 12 },
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: 'rgba(0,0,0,0.2)',
+              borderRadius: 4,
+            },
           }}
         >
           {columns.map((column) => (
             <Paper
               key={column.id}
               sx={{
-                minWidth: 280,
-                maxWidth: 280,
+                minWidth: { xs: 250, md: 280 },
+                maxWidth: { xs: 250, md: 280 },
                 display: 'flex',
                 flexDirection: 'column',
                 height: 'fit-content',
-                maxHeight: '80vh',
+                maxHeight: { xs: '70vh', md: '80vh' },
+                // Touch-friendly shadow
+                boxShadow: { xs: 2, md: 1 },
               }}
             >
               {/* Column Header */}

@@ -120,7 +120,6 @@
   - _Requirements: 1.6, 10.5_
 
 - [x] 16. Add import/export functionality
-
   - Create CSV/XLSX import system with data validation and error reporting
   - Implement duplicate detection during import process
   - Build export functionality for leads, reports, and analytics data
@@ -128,9 +127,7 @@
   - Create import history and rollback capabilities
   - _Requirements: 1.3, 8.4_
 
-- [-] 17. Implement system configuration and customization
-
-
+- [x] 17. Implement system configuration and customization
   - Create custom field management system for leads
   - Build picklist management for Status, Source, Product Type, and AdType
   - Implement configurable status workflows with Thai/English labels
@@ -138,7 +135,8 @@
   - Create email template management interface
   - _Requirements: 10.3, 10.4, 10.5_
 
-- [ ] 18. Build user interface for mobile responsiveness
+- [x] 18. Build user interface for mobile responsiveness
+
   - Optimize all frontend components for mobile and tablet devices
   - Implement touch-friendly interactions for Kanban boards and forms
   - Create responsive navigation and menu systems

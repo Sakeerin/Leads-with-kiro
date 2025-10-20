@@ -17,7 +17,6 @@ import {
   Typography,
   Menu,
   MenuItem,
-
   Button,
   TextField,
   InputAdornment,
@@ -26,6 +25,12 @@ import {
   Select,
   OutlinedInput,
   Stack,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  CardActions,
+  Collapse,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -109,6 +114,10 @@ export const LeadList: React.FC<LeadListProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState<SearchFilters>({});
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, lead: Lead) => {
     setAnchorEl(event.currentTarget);
@@ -143,7 +152,8 @@ export const LeadList: React.FC<LeadListProps> = ({
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setSearchTerm(value);
-    onFilterChange({ ...filters, searchTerm: value });
+    // Note: searchTerm is handled separately from filters in this component
+    onFilterChange(filters);
   };
 
   const handleFilterChange = (newFilters: Partial<SearchFilters>) => {
@@ -189,11 +199,165 @@ export const LeadList: React.FC<LeadListProps> = ({
   const isSelected = (leadId: string) => selectedLeads.includes(leadId);
   const numSelected = selectedLeads.length;
 
+  const handleCardExpand = (leadId: string) => {
+    setExpandedCard(expandedCard === leadId ? null : leadId);
+  };
+
+  const MobileLeadCard: React.FC<{ lead: Lead }> = ({ lead }) => (
+    <Card 
+      sx={{ 
+        mb: 1, 
+        border: isSelected(lead.id) ? 2 : 1,
+        borderColor: isSelected(lead.id) ? 'primary.main' : 'divider'
+      }}
+    >
+      <CardContent sx={{ pb: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Checkbox
+              checked={isSelected(lead.id)}
+              onChange={() => handleSelectLead(lead.id)}
+              size="small"
+            />
+            <Typography variant="caption" color="text.secondary" fontWeight="medium">
+              {lead.accountLeadId}
+            </Typography>
+          </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            {getScoreChip(lead.score.value, lead.score.band)}
+            <IconButton
+              size="small"
+              onClick={(e) => handleMenuOpen(e, lead)}
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
+              <MoreVertIcon />
+            </IconButton>
+          </Box>
+        </Box>
+
+        <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 0.5 }}>
+          {lead.company.name}
+        </Typography>
+        
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+          {lead.contact.name}
+        </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          {getStatusChip(lead.status)}
+          <Chip
+            label={lead.source.channel.replace('_', ' ')}
+            size="small"
+            variant="outlined"
+          />
+        </Box>
+
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {lead.assignment.assignedTo ? (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+                {lead.assignment.assignedTo.charAt(0).toUpperCase()}
+              </Avatar>
+              <Typography variant="caption">
+                {lead.assignment.assignedTo}
+              </Typography>
+            </Box>
+          ) : (
+            <Typography variant="caption" color="text.secondary">
+              Unassigned
+            </Typography>
+          )}
+          <Typography variant="caption" color="text.secondary">
+            {formatDate(lead.metadata.createdAt)}
+          </Typography>
+        </Box>
+
+        <Collapse in={expandedCard === lead.id}>
+          <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="body2" sx={{ mb: 1 }}>
+              <strong>Email:</strong> {lead.contact.email}
+            </Typography>
+            {lead.contact.phone && (
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Phone:</strong> 
+                <Button
+                  size="small"
+                  href={`tel:${lead.contact.phone}`}
+                  sx={{ ml: 1, minHeight: 32 }}
+                >
+                  {lead.contact.phone}
+                </Button>
+              </Typography>
+            )}
+            {lead.contact.mobile && (
+              <Typography variant="body2" sx={{ mb: 1 }}>
+                <strong>Mobile:</strong>
+                <Button
+                  size="small"
+                  href={`tel:${lead.contact.mobile}`}
+                  sx={{ ml: 1, minHeight: 32 }}
+                >
+                  {lead.contact.mobile}
+                </Button>
+              </Typography>
+            )}
+            {lead.company.industry && (
+              <Typography variant="body2">
+                <strong>Industry:</strong> {lead.company.industry}
+              </Typography>
+            )}
+          </Box>
+        </Collapse>
+      </CardContent>
+      
+      <CardActions sx={{ pt: 0, justifyContent: 'space-between' }}>
+        <Button
+          size="small"
+          onClick={() => handleCardExpand(lead.id)}
+        >
+          {expandedCard === lead.id ? 'Show Less' : 'Show More'}
+        </Button>
+        <Box>
+          <IconButton
+            size="small"
+            onClick={() => onLeadEdit(lead)}
+            sx={{ minWidth: 44, minHeight: 44 }}
+          >
+            <EditIcon />
+          </IconButton>
+          {lead.contact.email && (
+            <IconButton
+              size="small"
+              href={`mailto:${lead.contact.email}`}
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
+              <EmailIcon />
+            </IconButton>
+          )}
+          {(lead.contact.phone || lead.contact.mobile) && (
+            <IconButton
+              size="small"
+              href={`tel:${lead.contact.mobile || lead.contact.phone}`}
+              sx={{ minWidth: 44, minHeight: 44 }}
+            >
+              <PhoneIcon />
+            </IconButton>
+          )}
+        </Box>
+      </CardActions>
+    </Card>
+  );
+
   return (
     <Box>
       {/* Search and Filters */}
-      <Paper sx={{ p: 2, mb: 2 }}>
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 2 }}>
+      <Paper sx={{ p: { xs: 1, md: 2 }, mb: 2 }}>
+        <Stack 
+          direction={{ xs: 'column', sm: 'row' }} 
+          spacing={2} 
+          alignItems="center" 
+          sx={{ mb: 2 }}
+        >
           <TextField
             placeholder="Search leads..."
             value={searchTerm}
@@ -204,31 +368,53 @@ export const LeadList: React.FC<LeadListProps> = ({
                   <SearchIcon />
                 </InputAdornment>
               ),
+              sx: {
+                '& input': {
+                  fontSize: { xs: '16px', md: '14px' } // Prevent zoom on iOS
+                }
+              }
             }}
-            sx={{ flexGrow: 1 }}
+            sx={{ 
+              flexGrow: 1,
+              width: { xs: '100%', sm: 'auto' }
+            }}
           />
-          <Button
-            startIcon={<FilterIcon />}
-            onClick={() => setShowFilters(!showFilters)}
-            variant={showFilters ? 'contained' : 'outlined'}
-          >
-            Filters
-          </Button>
-          {Object.keys(filters).length > 0 && (
+          <Stack direction="row" spacing={1}>
             <Button
-              startIcon={<ClearIcon />}
-              onClick={clearFilters}
-              variant="outlined"
-              color="secondary"
+              startIcon={!isMobile ? <FilterIcon /> : undefined}
+              onClick={() => setShowFilters(!showFilters)}
+              variant={showFilters ? 'contained' : 'outlined'}
+              size={isMobile ? 'small' : 'medium'}
             >
-              Clear
+              {isMobile ? 'Filter' : 'Filters'}
             </Button>
-          )}
+            {Object.keys(filters).length > 0 && (
+              <Button
+                startIcon={!isMobile ? <ClearIcon /> : undefined}
+                onClick={clearFilters}
+                variant="outlined"
+                color="secondary"
+                size={isMobile ? 'small' : 'medium'}
+              >
+                Clear
+              </Button>
+            )}
+          </Stack>
         </Stack>
 
         {showFilters && (
-          <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+          <Stack 
+            direction={{ xs: 'column', sm: 'row' }} 
+            spacing={2} 
+            sx={{ mt: 2 }}
+          >
+            <FormControl 
+              size="small" 
+              sx={{ 
+                minWidth: { xs: '100%', sm: 120 },
+                width: { xs: '100%', sm: 'auto' }
+              }}
+            >
               <InputLabel>Status</InputLabel>
               <Select
                 multiple
@@ -251,7 +437,13 @@ export const LeadList: React.FC<LeadListProps> = ({
               </Select>
             </FormControl>
 
-            <FormControl size="small" sx={{ minWidth: 120 }}>
+            <FormControl 
+              size="small" 
+              sx={{ 
+                minWidth: { xs: '100%', sm: 120 },
+                width: { xs: '100%', sm: 'auto' }
+              }}
+            >
               <InputLabel>Score Band</InputLabel>
               <Select
                 multiple
@@ -312,125 +504,133 @@ export const LeadList: React.FC<LeadListProps> = ({
         </Paper>
       )}
 
-      {/* Table */}
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell padding="checkbox">
-                <Checkbox
-                  indeterminate={numSelected > 0 && numSelected < leads.length}
-                  checked={leads.length > 0 && numSelected === leads.length}
-                  onChange={handleSelectAll}
-                />
-              </TableCell>
-              {columns.map((column) => (
-                <TableCell
-                  key={column.id}
-                  sortDirection={pagination.sortBy === column.id ? pagination.sortOrder : false}
-                  sx={{ width: column.width }}
-                >
-                  {column.sortable ? (
-                    <TableSortLabel
-                      active={pagination.sortBy === column.id}
-                      direction={pagination.sortBy === column.id ? pagination.sortOrder : 'asc'}
-                      onClick={() => handleSort(column.id)}
-                    >
-                      {column.label}
-                    </TableSortLabel>
-                  ) : (
-                    column.label
-                  )}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {leads.map((lead) => (
-              <TableRow
-                key={lead.id}
-                hover
-                selected={isSelected(lead.id)}
-                sx={{ cursor: 'pointer' }}
-              >
+      {/* Mobile Card View / Desktop Table */}
+      {isMobile ? (
+        <Box sx={{ px: 1 }}>
+          {leads.map((lead) => (
+            <MobileLeadCard key={lead.id} lead={lead} />
+          ))}
+        </Box>
+      ) : (
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
                 <TableCell padding="checkbox">
                   <Checkbox
-                    checked={isSelected(lead.id)}
-                    onChange={() => handleSelectLead(lead.id)}
+                    indeterminate={numSelected > 0 && numSelected < leads.length}
+                    checked={leads.length > 0 && numSelected === leads.length}
+                    onChange={handleSelectAll}
                   />
                 </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="medium">
-                    {lead.accountLeadId}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2" fontWeight="medium">
-                    {lead.company.name}
-                  </Typography>
-                  {lead.company.industry && (
-                    <Typography variant="caption" color="text.secondary">
-                      {lead.company.industry}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {lead.contact.name}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {lead.contact.email}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={lead.source.channel.replace('_', ' ')}
-                    size="small"
-                    variant="outlined"
-                  />
-                </TableCell>
-                <TableCell>
-                  {getStatusChip(lead.status)}
-                </TableCell>
-                <TableCell>
-                  {getScoreChip(lead.score.value, lead.score.band)}
-                </TableCell>
-                <TableCell>
-                  {lead.assignment.assignedTo ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
-                        {lead.assignment.assignedTo.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Typography variant="body2">
-                        {lead.assignment.assignedTo}
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">
-                      Unassigned
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {formatDate(lead.metadata.createdAt)}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => handleMenuOpen(e, lead)}
+                {columns.map((column) => (
+                  <TableCell
+                    key={column.id}
+                    sortDirection={pagination.sortBy === column.id ? pagination.sortOrder : false}
+                    sx={{ width: column.width }}
                   >
-                    <MoreVertIcon />
-                  </IconButton>
-                </TableCell>
+                    {column.sortable ? (
+                      <TableSortLabel
+                        active={pagination.sortBy === column.id}
+                        direction={pagination.sortBy === column.id ? pagination.sortOrder : 'asc'}
+                        onClick={() => handleSort(column.id)}
+                      >
+                        {column.label}
+                      </TableSortLabel>
+                    ) : (
+                      column.label
+                    )}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            <TableBody>
+              {leads.map((lead) => (
+                <TableRow
+                  key={lead.id}
+                  hover
+                  selected={isSelected(lead.id)}
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isSelected(lead.id)}
+                      onChange={() => handleSelectLead(lead.id)}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="medium">
+                      {lead.accountLeadId}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2" fontWeight="medium">
+                      {lead.company.name}
+                    </Typography>
+                    {lead.company.industry && (
+                      <Typography variant="caption" color="text.secondary">
+                        {lead.company.industry}
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {lead.contact.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {lead.contact.email}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <Chip
+                      label={lead.source.channel.replace('_', ' ')}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {getStatusChip(lead.status)}
+                  </TableCell>
+                  <TableCell>
+                    {getScoreChip(lead.score.value, lead.score.band)}
+                  </TableCell>
+                  <TableCell>
+                    {lead.assignment.assignedTo ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar sx={{ width: 24, height: 24, fontSize: '0.75rem' }}>
+                          {lead.assignment.assignedTo.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Typography variant="body2">
+                          {lead.assignment.assignedTo}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        Unassigned
+                      </Typography>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Typography variant="body2">
+                      {formatDate(lead.metadata.createdAt)}
+                    </Typography>
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      size="small"
+                      onClick={(e) => handleMenuOpen(e, lead)}
+                    >
+                      <MoreVertIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
 
       {/* Pagination */}
       <TablePagination

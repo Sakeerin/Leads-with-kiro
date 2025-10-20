@@ -1092,6 +1092,13 @@ export interface ValidationError {
   code: string;
 }
 
+export interface DuplicateMatch {
+  leadId: string;
+  matchType: 'email' | 'phone' | 'company';
+  matchScore: number;
+  matchedFields: string[];
+}
+
 export interface DuplicateReport {
   totalDuplicates: number;
   duplicatesByType: Record<string, number>;
@@ -1236,6 +1243,386 @@ export interface ScheduledReportExecutionTable {
   error_message?: string;
   started_at: Date;
   completed_at?: Date;
+  created_at: Date;
+  updated_at: Date;
+}
+
+// Configuration System Types
+export interface CustomField {
+  id: string;
+  entityType: CustomFieldEntityType;
+  fieldName: string;
+  fieldLabel: string;
+  fieldLabelTh?: string;
+  fieldType: CustomFieldType;
+  description?: string;
+  descriptionTh?: string;
+  isRequired: boolean;
+  isActive: boolean;
+  displayOrder: number;
+  validationRules?: ValidationRule[];
+  picklistValues?: PicklistOption[];
+  defaultValue?: string;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PicklistValue {
+  id: string;
+  picklistType: PicklistType;
+  value: string;
+  label: string;
+  labelTh?: string;
+  description?: string;
+  descriptionTh?: string;
+  colorCode?: string;
+  icon?: string;
+  isActive: boolean;
+  isDefault: boolean;
+  displayOrder: number;
+  metadata?: Record<string, any>;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface StatusWorkflow {
+  id: string;
+  entityType: WorkflowEntityType;
+  name: string;
+  nameTh?: string;
+  description?: string;
+  descriptionTh?: string;
+  statusTransitions: StatusTransition[];
+  transitionRules?: TransitionRule[];
+  isActive: boolean;
+  isDefault: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface WorkingHoursConfig {
+  id: string;
+  name: string;
+  timezone: string;
+  schedule: WeeklySchedule;
+  holidays?: Holiday[];
+  description?: string;
+  isActive: boolean;
+  isDefault: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Holiday {
+  id: string;
+  name: string;
+  nameTh?: string;
+  date: Date;
+  type: HolidayType;
+  description?: string;
+  descriptionTh?: string;
+  isRecurring: boolean;
+  recurrencePattern?: string;
+  isActive: boolean;
+  createdBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SystemConfig {
+  id: string;
+  configKey: string;
+  configValue?: string;
+  configJson?: Record<string, any>;
+  dataType: ConfigDataType;
+  description?: string;
+  descriptionTh?: string;
+  category: ConfigCategory;
+  isSensitive: boolean;
+  requiresRestart: boolean;
+  updatedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Supporting interfaces for configuration
+export interface ValidationRule {
+  type: ValidationType;
+  value?: any;
+  message?: string;
+  messageTh?: string;
+}
+
+export interface PicklistOption {
+  value: string;
+  label: string;
+  labelTh?: string;
+  isActive?: boolean;
+}
+
+export interface StatusTransition {
+  fromStatus: string;
+  toStatus: string;
+  isAllowed: boolean;
+  requiresApproval?: boolean;
+  approvalRoles?: UserRole[];
+  conditions?: TransitionCondition[];
+}
+
+export interface TransitionRule {
+  id: string;
+  name: string;
+  conditions: TransitionCondition[];
+  actions: TransitionAction[];
+  isActive: boolean;
+}
+
+export interface TransitionCondition {
+  field: string;
+  operator: ConditionOperator;
+  value: any;
+}
+
+export interface TransitionAction {
+  type: TransitionActionType;
+  parameters: Record<string, any>;
+}
+
+export interface WeeklySchedule {
+  monday: DayScheduleConfig;
+  tuesday: DayScheduleConfig;
+  wednesday: DayScheduleConfig;
+  thursday: DayScheduleConfig;
+  friday: DayScheduleConfig;
+  saturday: DayScheduleConfig;
+  sunday: DayScheduleConfig;
+}
+
+export interface DayScheduleConfig {
+  isWorkingDay: boolean;
+  startTime?: string; // HH:mm format
+  endTime?: string; // HH:mm format
+  breaks?: TimeBreak[];
+}
+
+export interface TimeBreak {
+  startTime: string;
+  endTime: string;
+  name?: string;
+}
+
+// Enums for configuration system
+export enum CustomFieldEntityType {
+  LEAD = 'lead',
+  ACCOUNT = 'account',
+  CONTACT = 'contact',
+  OPPORTUNITY = 'opportunity',
+  TASK = 'task',
+  ACTIVITY = 'activity'
+}
+
+export enum CustomFieldType {
+  TEXT = 'text',
+  TEXTAREA = 'textarea',
+  NUMBER = 'number',
+  DECIMAL = 'decimal',
+  DATE = 'date',
+  DATETIME = 'datetime',
+  BOOLEAN = 'boolean',
+  PICKLIST = 'picklist',
+  MULTI_PICKLIST = 'multi_picklist',
+  EMAIL = 'email',
+  PHONE = 'phone',
+  URL = 'url',
+  CURRENCY = 'currency'
+}
+
+export enum PicklistType {
+  STATUS = 'status',
+  SOURCE = 'source',
+  PRODUCT_TYPE = 'product_type',
+  AD_TYPE = 'ad_type',
+  INDUSTRY = 'industry',
+  COMPANY_SIZE = 'company_size',
+  INTEREST_LEVEL = 'interest_level',
+  BUDGET_STATUS = 'budget_status',
+  PURCHASE_TIMELINE = 'purchase_timeline',
+  BUSINESS_TYPE = 'business_type',
+  TASK_TYPE = 'task_type',
+  PRIORITY = 'priority',
+  OPPORTUNITY_STAGE = 'opportunity_stage',
+  CLOSE_REASON = 'close_reason'
+}
+
+export enum WorkflowEntityType {
+  LEAD = 'lead',
+  OPPORTUNITY = 'opportunity',
+  TASK = 'task'
+}
+
+export enum HolidayType {
+  NATIONAL = 'national',
+  COMPANY = 'company',
+  REGIONAL = 'regional'
+}
+
+export enum ConfigDataType {
+  STRING = 'string',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  JSON = 'json'
+}
+
+export enum ConfigCategory {
+  GENERAL = 'general',
+  EMAIL = 'email',
+  SCORING = 'scoring',
+  ROUTING = 'routing',
+  WORKFLOW = 'workflow',
+  SECURITY = 'security',
+  INTEGRATION = 'integration',
+  NOTIFICATION = 'notification'
+}
+
+export enum ValidationType {
+  REQUIRED = 'required',
+  MIN_LENGTH = 'min_length',
+  MAX_LENGTH = 'max_length',
+  MIN_VALUE = 'min_value',
+  MAX_VALUE = 'max_value',
+  REGEX = 'regex',
+  EMAIL = 'email',
+  PHONE = 'phone',
+  URL = 'url',
+  DATE_RANGE = 'date_range'
+}
+
+export enum ConditionOperator {
+  EQUALS = 'equals',
+  NOT_EQUALS = 'not_equals',
+  GREATER_THAN = 'greater_than',
+  LESS_THAN = 'less_than',
+  GREATER_EQUAL = 'greater_equal',
+  LESS_EQUAL = 'less_equal',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'not_contains',
+  IN = 'in',
+  NOT_IN = 'not_in',
+  IS_NULL = 'is_null',
+  IS_NOT_NULL = 'is_not_null'
+}
+
+export enum TransitionActionType {
+  SET_FIELD = 'set_field',
+  SEND_EMAIL = 'send_email',
+  CREATE_TASK = 'create_task',
+  ASSIGN_USER = 'assign_user',
+  SEND_NOTIFICATION = 'send_notification',
+  TRIGGER_WORKFLOW = 'trigger_workflow'
+}
+
+// Database table interfaces for configuration
+export interface CustomFieldTable {
+  id: string;
+  entity_type: CustomFieldEntityType;
+  field_name: string;
+  field_label: string;
+  field_label_th?: string;
+  field_type: CustomFieldType;
+  description?: string;
+  description_th?: string;
+  is_required: boolean;
+  is_active: boolean;
+  display_order: number;
+  validation_rules?: string; // JSON string
+  picklist_values?: string; // JSON string
+  default_value?: string;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface PicklistValueTable {
+  id: string;
+  picklist_type: PicklistType;
+  value: string;
+  label: string;
+  label_th?: string;
+  description?: string;
+  description_th?: string;
+  color_code?: string;
+  icon?: string;
+  is_active: boolean;
+  is_default: boolean;
+  display_order: number;
+  metadata?: string; // JSON string
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface StatusWorkflowTable {
+  id: string;
+  entity_type: WorkflowEntityType;
+  name: string;
+  name_th?: string;
+  description?: string;
+  description_th?: string;
+  status_transitions: string; // JSON string
+  transition_rules?: string; // JSON string
+  is_active: boolean;
+  is_default: boolean;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface WorkingHoursConfigTable {
+  id: string;
+  name: string;
+  timezone: string;
+  schedule: string; // JSON string
+  holidays?: string; // JSON string
+  description?: string;
+  is_active: boolean;
+  is_default: boolean;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface HolidayTable {
+  id: string;
+  name: string;
+  name_th?: string;
+  date: Date;
+  type: HolidayType;
+  description?: string;
+  description_th?: string;
+  is_recurring: boolean;
+  recurrence_pattern?: string;
+  is_active: boolean;
+  created_by: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface SystemConfigTable {
+  id: string;
+  config_key: string;
+  config_value?: string;
+  config_json?: string; // JSON string
+  data_type: ConfigDataType;
+  description?: string;
+  description_th?: string;
+  category: ConfigCategory;
+  is_sensitive: boolean;
+  requires_restart: boolean;
+  updated_by: string;
   created_at: Date;
   updated_at: Date;
 }

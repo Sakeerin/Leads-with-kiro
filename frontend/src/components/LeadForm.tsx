@@ -164,8 +164,12 @@ export const LeadForm: React.FC<LeadFormProps> = ({
         onClose={handleClose} 
         maxWidth="md" 
         fullWidth
+        fullScreen={window.innerWidth < 768} // Full screen on mobile
         PaperProps={{
-          sx: { minHeight: '80vh' }
+          sx: { 
+            minHeight: { xs: '100vh', md: '80vh' },
+            margin: { xs: 0, md: 2 }
+          }
         }}
       >
         <DialogTitle>
@@ -178,8 +182,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mt: 2, mb: 2 }}>
               Company Information
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="company.name"
                   control={control}
@@ -202,7 +206,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="company.industry"
                   control={control}
@@ -215,7 +219,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="company.size"
                   control={control}
@@ -241,8 +245,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Contact Information
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="contact.name"
                   control={control}
@@ -257,7 +261,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="contact.email"
                   control={control}
@@ -273,7 +277,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="contact.phone"
                   control={control}
@@ -282,11 +286,18 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                       {...field}
                       label="Phone"
                       fullWidth
+                      InputProps={{
+                        sx: { 
+                          '& input': { 
+                            fontSize: { xs: '16px', md: '14px' } // Prevent zoom on iOS
+                          }
+                        }
+                      }}
                     />
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="contact.mobile"
                   control={control}
@@ -295,6 +306,13 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                       {...field}
                       label="Mobile"
                       fullWidth
+                      InputProps={{
+                        sx: { 
+                          '& input': { 
+                            fontSize: { xs: '16px', md: '14px' } // Prevent zoom on iOS
+                          }
+                        }
+                      }}
                     />
                   )}
                 />
@@ -307,8 +325,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Source Information
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="source.channel"
                   control={control}
@@ -326,7 +344,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="source.campaign"
                   control={control}
@@ -347,8 +365,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Status and Assignment
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="status"
                   control={control}
@@ -366,7 +384,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({
                   )}
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Assigned To"
                   fullWidth
@@ -381,29 +399,29 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Qualification
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Interest Level"
                   fullWidth
                   placeholder="High, Medium, Low"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Budget Status"
                   fullWidth
                   placeholder="Confirmed, Estimated, Unknown"
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Purchase Timeline"
                   fullWidth
                   placeholder="Immediate, Within Month, etc."
                 />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Business Type"
                   fullWidth
@@ -418,8 +436,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Product Information
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <Controller
                   name="product.type"
                   control={control}
@@ -463,8 +481,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({
             <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
               Follow-up
             </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={{ xs: 1, md: 2 }}>
+              <Grid item xs={12} sm={6} md={6}>
                 <TextField
                   label="Next Follow-up Date"
                   type="date"

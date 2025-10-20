@@ -1,52 +1,134 @@
 
 import { Routes, Route } from 'react-router-dom';
-import { Container, Typography, Box, AppBar, Toolbar, Button, Stack } from '@mui/material';
+import { 
+  Container, 
+  Typography, 
+  Box, 
+  AppBar, 
+  Toolbar, 
+  Button, 
+  Stack,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  useMediaQuery,
+  useTheme,
+  ThemeProvider,
+} from '@mui/material';
+import {
+  Menu as MenuIcon,
+  Dashboard as DashboardIcon,
+  Assessment as ReportsIcon,
+  Contacts as LeadsIcon,
+} from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { LeadManagement } from './pages/LeadManagement';
 import { ReportingDashboard } from './components/ReportingDashboard';
+import { mobileTheme } from './theme/mobileTheme';
 
 function App() {
   const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { path: '/', label: 'Dashboard', icon: <DashboardIcon /> },
+    { path: '/reports', label: 'Reports', icon: <ReportsIcon /> },
+    { path: '/leads', label: 'Leads', icon: <LeadsIcon /> },
+  ];
+
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <ThemeProvider theme={mobileTheme}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* Navigation */}
       <AppBar position="static" elevation={1}>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Lead Management System
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleMobileMenuToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography 
+            variant={isMobile ? "h6" : "h5"} 
+            component="div" 
+            sx={{ 
+              flexGrow: 1,
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.5rem' }
+            }}
+          >
+            {isMobile ? 'LMS' : 'Lead Management System'}
           </Typography>
-          <Stack direction="row" spacing={2}>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/"
-              variant={location.pathname === '/' ? 'outlined' : 'text'}
-              sx={{ color: 'white', borderColor: 'white' }}
-            >
-              Dashboard
-            </Button>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/reports"
-              variant={location.pathname === '/reports' ? 'outlined' : 'text'}
-              sx={{ color: 'white', borderColor: 'white' }}
-            >
-              Reports
-            </Button>
-            <Button
-              color="inherit"
-              component={Link}
-              to="/leads"
-              variant={location.pathname === '/leads' ? 'outlined' : 'text'}
-              sx={{ color: 'white', borderColor: 'white' }}
-            >
-              Leads
-            </Button>
-          </Stack>
+          {!isMobile && (
+            <Stack direction="row" spacing={2}>
+              {navigationItems.map((item) => (
+                <Button
+                  key={item.path}
+                  color="inherit"
+                  component={Link}
+                  to={item.path}
+                  variant={location.pathname === item.path ? 'outlined' : 'text'}
+                  sx={{ color: 'white', borderColor: 'white' }}
+                  startIcon={item.icon}
+                >
+                  {item.label}
+                </Button>
+              ))}
+            </Stack>
+          )}
         </Toolbar>
       </AppBar>
+
+      {/* Mobile Navigation Drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileMenuOpen}
+        onClose={handleMobileMenuClose}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            boxSizing: 'border-box',
+            width: 250,
+          },
+        }}
+      >
+        <Box sx={{ overflow: 'auto' }}>
+          <List>
+            {navigationItems.map((item) => (
+              <ListItem key={item.path} disablePadding>
+                <ListItemButton
+                  component={Link}
+                  to={item.path}
+                  onClick={handleMobileMenuClose}
+                  selected={location.pathname === item.path}
+                >
+                  <ListItemIcon>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+      </Drawer>
 
       {/* Main Content */}
       <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
@@ -70,6 +152,7 @@ function App() {
         </Routes>
       </Box>
     </Box>
+    </ThemeProvider>
   );
 }
 
