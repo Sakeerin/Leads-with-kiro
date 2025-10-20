@@ -7,6 +7,8 @@ import swaggerUi from 'swagger-ui-express';
 import apiRoutes from './routes';
 import { errorHandler } from './utils/errors';
 import { SearchService } from './services/searchService';
+import { generalRateLimit } from './middleware/rateLimiting';
+import { AuditService } from './services/auditService';
 
 // Load environment variables
 dotenv.config();
@@ -44,11 +46,46 @@ const swaggerOptions = {
 
 const specs = swaggerJsdoc(swaggerOptions);
 
-// Middleware
-app.use(helmet());
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}));
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Rate limiting
+app.use(generalRateLimit);
+
+// Body parsing middleware with size limits
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    // Log potential security issues
+    if (buf.length > 10 * 1024 * 1024) { // 10MB
+      AuditService.logSecurityEvent('large_payload_detected', req as any, 'medium', {
+        payloadSize: buf.length
+      }).catch(console.error);
+    }
+  }
+}));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));

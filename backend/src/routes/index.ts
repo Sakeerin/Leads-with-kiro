@@ -18,6 +18,7 @@ import reportingRoutes from './reporting';
 import attachmentRoutes from './attachments';
 import importExportRoutes from './importExport';
 import configurationRoutes from './configuration';
+import securityRoutes from './security';
 
 const router = Router();
 
@@ -50,6 +51,7 @@ router.use('/reporting', reportingRoutes);
 router.use('/', attachmentRoutes);
 router.use('/', importExportRoutes);
 router.use('/configuration', configurationRoutes);
+router.use('/security', securityRoutes);
 
 // Health check for API
 router.get('/health', (_req, res) => {
