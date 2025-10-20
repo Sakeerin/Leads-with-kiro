@@ -1,0 +1,168 @@
+# Prometheus alert rules for Lead Management System
+groups:
+  - name: lead_management_system
+    rules:
+      # Application Health Alerts
+      - alert: ApplicationDown
+        expr: up{job="lead-management-backend"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Lead Management System backend is down"
+          description: "The backend service has been down for more than 1 minute."
+
+      - alert: ApplicationUnhealthy
+        expr: app_health_status{service="lead-management-system"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Lead Management System is unhealthy"
+          description: "The application health check is failing for more than 2 minutes."
+
+      # Performance Alerts
+      - alert: HighResponseTime
+        expr: app_response_time_ms{service="lead-management-system"} > 5000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High response time detected"
+          description: "Average response time is {{ $value }}ms for more than 5 minutes."
+
+      - alert: HighErrorRate
+        expr: app_error_rate_percent{service="lead-management-system"} > 5
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value }}% for more than 3 minutes."
+
+      - alert: CriticalErrorRate
+        expr: app_error_rate_percent{service="lead-management-system"} > 10
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical error rate detected"
+          description: "Error rate is {{ $value }}% for more than 1 minute."
+
+      # Resource Usage Alerts
+      - alert: HighMemoryUsage
+        expr: (app_memory_usage_bytes{type="heapUsed",service="lead-management-system"} / app_memory_usage_bytes{type="heapTotal",service="lead-management-system"}) * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% for more than 5 minutes."
+
+      - alert: CriticalMemoryUsage
+        expr: (app_memory_usage_bytes{type="heapUsed",service="lead-management-system"} / app_memory_usage_bytes{type="heapTotal",service="lead-management-system"}) * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical memory usage detected"
+          description: "Memory usage is {{ $value }}% for more than 2 minutes."
+
+  - name: database_alerts
+    rules:
+      # Database Alerts
+      - alert: DatabaseDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL database is down"
+          description: "The PostgreSQL database has been down for more than 1 minute."
+
+      - alert: DatabaseHighConnections
+        expr: pg_stat_database_numbackends / pg_settings_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connection usage"
+          description: "Database connection usage is {{ $value }}% for more than 5 minutes."
+
+      - alert: DatabaseSlowQueries
+        expr: rate(pg_stat_database_tup_returned[5m]) / rate(pg_stat_database_tup_fetched[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Database slow queries detected"
+          description: "Database query efficiency is low for more than 10 minutes."
+
+  - name: cache_alerts
+    rules:
+      # Redis Cache Alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis cache is down"
+          description: "The Redis cache has been down for more than 1 minute."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage"
+          description: "Redis memory usage is {{ $value }}% for more than 5 minutes."
+
+      - alert: RedisHighConnections
+        expr: redis_connected_clients > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis connection count"
+          description: "Redis has {{ $value }} connected clients for more than 5 minutes."
+
+  - name: system_alerts
+    rules:
+      # System Resource Alerts
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }} for more than 5 minutes."
+
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} for more than 5 minutes."
+
+      - alert: CriticalDiskUsage
+        expr: (node_filesystem_size_bytes - node_filesystem_avail_bytes) / node_filesystem_size_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} for more than 2 minutes."
+
+      - alert: HighLoadAverage
+        expr: node_load1 > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High system load detected"
+          description: "System load is {{ $value }} on {{ $labels.instance }} for more than 5 minutes."

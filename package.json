@@ -20,6 +20,13 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
+    "monitoring:up": "docker-compose -f monitoring/docker-compose.monitoring.yml up -d",
+    "monitoring:down": "docker-compose -f monitoring/docker-compose.monitoring.yml down",
+    "monitoring:logs": "docker-compose -f monitoring/docker-compose.monitoring.yml logs -f",
+    "backup:db": "bash scripts/backup-database.sh",
+    "restore:db": "bash scripts/restore-database.sh",
+    "backup:setup": "bash scripts/backup-cron.sh install",
+    "backup:status": "bash scripts/backup-cron.sh status",
     "setup": "npm run install:backend && npm run install:frontend",
     "install:backend": "cd backend && npm install",
     "install:frontend": "cd frontend && npm install"

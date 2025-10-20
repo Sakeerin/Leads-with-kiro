@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lead-management-system
+  labels:
+    name: lead-management-system
+    environment: production

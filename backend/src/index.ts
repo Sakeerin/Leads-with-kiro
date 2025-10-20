@@ -5,10 +5,14 @@ import dotenv from 'dotenv';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import apiRoutes from './routes';
+import healthRoutes from './routes/health';
 import { errorHandler } from './utils/errors';
 import { SearchService } from './services/searchService';
 import { generalRateLimit } from './middleware/rateLimiting';
 import { AuditService } from './services/auditService';
+import { monitoringService } from './services/monitoringService';
+import { loggingService, requestLoggingMiddleware, errorLoggingMiddleware } from './services/loggingService';
+import { healthCheckService } from './services/healthCheckService';
 
 // Load environment variables
 dotenv.config();
@@ -64,7 +68,7 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: process.env['FRONTEND_URL'] || 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -73,14 +77,19 @@ app.use(cors({
 // Rate limiting
 app.use(generalRateLimit);
 
+// Monitoring and logging middleware
+app.use(monitoringService.requestMonitoringMiddleware());
+app.use(requestLoggingMiddleware);
+
 // Body parsing middleware with size limits
 app.use(express.json({ 
   limit: '10mb',
-  verify: (req, res, buf) => {
+  verify: (req, _res, buf) => {
     // Log potential security issues
     if (buf.length > 10 * 1024 * 1024) { // 10MB
-      AuditService.logSecurityEvent('large_payload_detected', req as any, 'medium', {
-        payloadSize: buf.length
+      AuditService.logSecurityEvent('suspicious_activity', req as any, 'high', {
+        payloadSize: buf.length,
+        reason: 'Large payload detected'
       }).catch(console.error);
     }
   }
@@ -90,19 +99,14 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Swagger documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-// Health check endpoint
-app.get('/health', (_req, res) => {
-  res.status(200).json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    service: 'lead-management-backend'
-  });
-});
+// Health check and monitoring routes
+app.use('/', healthRoutes);
 
 // API routes
 app.use('/api/v1', apiRoutes);
 
 // Error handling middleware
+app.use(errorLoggingMiddleware);
 app.use(errorHandler);
 
 // 404 handler
@@ -116,8 +120,15 @@ app.use('*', (req, res) => {
 });
 
 app.listen(PORT, async () => {
+  loggingService.info('Server starting up', { port: PORT });
+  
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`📊 Metrics: http://localhost:${PORT}/metrics`);
+  console.log(`📋 API docs: http://localhost:${PORT}/api-docs`);
+  
+  // Initialize monitoring
+  monitoringService.recordMetric('server.startup', 1, { port: PORT.toString() });
   
   // Initialize Elasticsearch
   try {
@@ -127,14 +138,19 @@ app.listen(PORT, async () => {
     setTimeout(async () => {
       try {
         await SearchService.createIndices();
-        console.log('✅ Elasticsearch indices created successfully');
+        loggingService.info('Elasticsearch indices created successfully');
+        monitoringService.recordMetric('elasticsearch.initialization', 1, { status: 'success' });
       } catch (error) {
-        console.warn('⚠️ Failed to create Elasticsearch indices:', error);
+        loggingService.error('Failed to create Elasticsearch indices', error as Error);
+        monitoringService.recordMetric('elasticsearch.initialization', 0, { status: 'failed' });
       }
     }, 5000);
   } catch (error) {
-    console.warn('⚠️ Failed to initialize Elasticsearch:', error);
+    loggingService.error('Failed to initialize Elasticsearch', error as Error);
+    monitoringService.recordMetric('elasticsearch.initialization', 0, { status: 'failed' });
   }
+  
+  loggingService.info('Server startup completed', { port: PORT });
 });
 
 export default app;
